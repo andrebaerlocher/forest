@@ -1,0 +1,165 @@
+@font-face {
+  font-family: "Illinois Mono";
+  src: url("/fonts/IllinoisMono-Regular.ttf") format("truetype");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Illinois Mono";
+  src: url("/fonts/IllinoisMono-Medium.ttf") format("truetype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Illinois Mono";
+  src: url("/fonts/IllinoisMono-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+:root {
+  --hue: 282; /* indigo default. pine ≈ 165, oxblood ≈ 20, slate ≈ 250 */
+
+  /* fixed materials — never rotate */
+  --paper-l: oklch(96.5% 0.012 95);
+  --paper-raised-l: oklch(93.5% 0.018 95);
+  --accent: oklch(73.5% 0.058 70); /* linen tan — the invariant */
+  --accent-ink: oklch(58% 0.07 70);
+
+  /* ink ladder — five lightness steps on one hue */
+  --ink-1: oklch(19% 0.045 var(--hue));
+  --ink-2: oklch(24% 0.05 var(--hue));
+  --ink-3: oklch(29% 0.055 var(--hue));
+  --ink-4: oklch(33% 0.055 var(--hue));
+  --ink-5: oklch(38% 0.05 var(--hue));
+
+  /* semantic surfaces */
+  --spine: var(--ink-2);
+  --panel: var(--ink-3);
+  --canvas: var(--paper-l);
+  --raised: var(--paper-raised-l);
+
+  --text-1: var(--ink-3);
+  --text-2: oklch(38% 0.02 100);
+  --text-3: oklch(60% 0.025 100);
+  --text-inverse: oklch(94.5% 0.012 95);
+
+  --line-soft: oklch(91.5% 0.02 95);
+  --line-mid: oklch(89.5% 0.02 95);
+  --line-strong: var(--ink-3);
+  --wash: oklch(29% 0.055 var(--hue) / 5%);
+  --wash-hover: oklch(29% 0.055 var(--hue) / 2.5%);
+  --neomorphic-shadow: oklch(35% 0.015 var(--hue) / 3.5%);
+  --neomorphic-highlight: oklch(100% 0 var(--hue) / 80%);
+
+  /* status — fixed hues, ledger-ink logic */
+  --danger: oklch(52% 0.11 35);
+  --success: oklch(50% 0.085 150);
+  --warning: oklch(53% 0.095 75);
+
+  /* cell / control states */
+  --cell-edit-bg: var(--ink-3);
+  --cell-edit-text: var(--text-inverse);
+  --cell-sel-bg: oklch(90% 0.045 85);
+  --cell-sel-border: var(--accent);
+
+  /* type */
+  --font-body: "Lexend", system-ui, sans-serif;
+  --font-num: "Illinois Mono", "Lexend", ui-monospace, monospace;
+
+  /* geometry */
+  --radius-s: 6px;
+  --radius-m: 10px;
+  --radius-round: 999px;
+
+  /* density */
+  --pad-cell-y: 8px;
+  --pad-control-y: 8px;
+  --font-data: 13px;
+
+  /* elevation */
+  --z-sticky: 10;
+  --z-drawer: 40;
+  --z-palette: 50;
+  --z-toast: 60;
+  --z-tooltip: 70;
+  --shadow-drag: 0 6px 20px oklch(19% 0.05 var(--hue) / 25%);
+
+  /* motion */
+  --t-fast: 120ms;
+  --t-base: 200ms;
+  --t-slow: 320ms;
+  --ease: cubic-bezier(0.25, 0.6, 0.3, 1);
+
+  --scroll-thumb: oklch(29% 0.055 var(--hue) / 20%);
+
+  /* wave masks */
+  --wave-mask-v: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2022%20800%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%2C0%20L12%2C0%20C19%2C50%205%2C95%2010%2C150%20C16%2C210%204%2C260%209%2C320%20C15%2C380%205%2C430%2010%2C490%20C16%2C550%204%2C600%209%2C660%20C14%2C720%206%2C760%2010%2C800%20L0%2C800%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  --wave-mask-v-flipped: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2022%20800%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M22%2C0%20L10%2C0%20C3%2C50%2017%2C95%2012%2C150%20C6%2C210%2018%2C260%2013%2C320%20C7%2C380%2017%2C430%2012%2C490%20C6%2C550%2018%2C600%2013%2C660%20C8%2C720%2016%2C760%2012%2C800%20L22%2C800%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  --wave-mask-h: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%2022%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%2C0%20L0%2C12%20C50%2C19%2095%2C5%20150%2C10%20C210%2C16%20260%2C4%20320%2C9%20C380%2C15%20430%2C5%20490%2C10%20C550%2C16%20600%2C4%20660%2C9%20C720%2C14%20760%2C6%20800%2010%20L800%2C0%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+}
+
+[data-mode="dark"] {
+  --spine: oklch(15% 0.025 var(--hue));
+  --panel: oklch(19.5% 0.03 var(--hue));
+  --canvas: oklch(24% 0.04 var(--hue));
+  --raised: oklch(28% 0.045 var(--hue));
+
+  --text-1: oklch(94.5% 0.012 95);
+  --text-2: oklch(87% 0.02 var(--hue));
+  --text-3: oklch(60% 0.035 var(--hue));
+
+  --line-soft: oklch(29% 0.05 var(--hue));
+  --line-mid: oklch(31% 0.05 var(--hue));
+  --line-strong: oklch(80.5% 0.02 96);
+  --wash: oklch(94.5% 0.012 95 / 7%);
+  --wash-hover: oklch(94.5% 0.012 95 / 3.5%);
+  --neomorphic-shadow: oklch(8% 0.01 var(--hue) / 40%);
+  --neomorphic-highlight: oklch(25% 0.02 var(--hue) / 15%);
+
+  --danger: oklch(70% 0.11 35);
+  --success: oklch(72% 0.085 150);
+  --warning: oklch(74% 0.095 75);
+
+  --cell-edit-bg: var(--accent);
+  --cell-edit-text: oklch(15% 0.025 var(--hue));
+  --cell-sel-bg: oklch(73.5% 0.058 70 / 22%);
+  --accent-ink: var(--accent);
+
+  --scroll-thumb: oklch(94.5% 0.012 95 / 18%);
+}
+
+[data-density="compact"] {
+  --pad-cell-y: 4px;
+  --pad-control-y: 5px;
+  --font-data: 12.5px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body);
+  font-weight: 300;
+  background: var(--canvas);
+  color: var(--text-2);
+  font-size: 15px;
+  line-height: 1.75;
+  transition:
+    background var(--t-slow) var(--ease),
+    color var(--t-slow) var(--ease);
+}

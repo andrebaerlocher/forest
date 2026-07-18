@@ -1,0 +1,90 @@
+{
+	"name": "forest",
+	"version": "0.0.1",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build && npm run prepack",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"prepack": "svelte-kit sync && svelte-package && publint",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"storybook": "storybook dev -p 6006",
+		"build-storybook": "storybook build",
+		"lint": "biome check src",
+		"format": "biome format --write src",
+		"check:native": "svelte-check-native --workspace .",
+		"check:doctor": "svelte-doctor check",
+		"check:cpd": "jscpd src/lib",
+		"diagnose": "node scripts/run-diagnostics.js"
+	},
+	"files": [
+		"dist",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec.*"
+	],
+	"sideEffects": [
+		"**/*.css"
+	],
+	"svelte": "./dist/index.js",
+	"types": "./dist/index.d.ts",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"svelte": "./dist/index.js"
+		}
+	},
+	"peerDependencies": {
+		"svelte": "^5.0.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^2.5.4",
+		"@chromatic-com/storybook": "^5.2.1",
+		"@storybook/addon-a11y": "^10.5.2",
+		"@storybook/addon-docs": "^10.5.2",
+		"@storybook/addon-svelte-csf": "^5.1.2",
+		"@storybook/addon-vitest": "^10.5.2",
+		"@storybook/sveltekit": "^10.5.2",
+		"@sveltejs/adapter-auto": "^7.0.1",
+		"@sveltejs/kit": "^2.63.0",
+		"@sveltejs/package": "^2.5.8",
+		"@sveltejs/vite-plugin-svelte": "^7.1.2",
+		"@types/node": "^22",
+		"@typescript/native-preview": "^7.0.0-dev.20260707.2",
+		"@vitest/browser-playwright": "^4.1.10",
+		"@vitest/coverage-v8": "^4.1.10",
+		"jscpd": "^5.0.12",
+		"playwright": "^1.61.1",
+		"publint": "^0.3.21",
+		"storybook": "^10.5.2",
+		"svelte": "^5.56.1",
+		"svelte-check": "^4.6.0",
+		"svelte-check-native": "^1.1.0",
+		"svelte-doctor": "^0.3.3",
+		"typescript": "^6.0.3",
+		"vite": "^8.0.16",
+		"vitest": "^4.1.10"
+	},
+	"keywords": [
+		"svelte"
+	],
+	"svelteDoctor": {
+		"ignore": {
+			"files": [
+				"scripts/**",
+				"vite.config.ts",
+				"src/stories/**",
+				"storybook-static/**",
+				"**/scripts/**",
+				"**/vite.config.ts",
+				"**/src/stories/**",
+				"**/storybook-static/**"
+			],
+			"rules": [
+				"prefer-snippet-over-passed-function",
+				"no-unnecessary-state"
+			]
+		}
+	}
+}

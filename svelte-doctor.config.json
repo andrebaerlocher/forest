@@ -1,0 +1,22 @@
+{
+  "ignore": {
+    "files": [
+      "**/scripts/**",
+      "**/vite.config.ts",
+      "**/src/stories/**",
+      "**/storybook-static/**",
+      "scripts/**",
+      "vite.config.ts",
+      "src/stories/**",
+      "storybook-static/**"
+    ],
+    "rules": [
+      "prefer-snippet-over-passed-function",
+      "no-unnecessary-state",
+      "no-unsafe-shell",
+      "no-style-tag-props",
+      "missing-error-page",
+      "no-console"
+    ]
+  }
+}

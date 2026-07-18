@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="light" data-density="comfortable">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A Forest — Design System</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   A FOREST — design tokens (OKLCH)
+   Light = the box lid. Dark = inside the box.
+   Theme axis: --hue rotates the ink ladder. Paper & accent are fixed.
+   ============================================================ */
+:root {
+  --hue: 282;                                   /* indigo. pine ≈ 165, oxblood ≈ 20, slate ≈ 250 */
+
+  /* fixed materials — never rotate */
+  --paper-l:   oklch(96.5% 0.012 95);
+  --paper-raised-l: oklch(93.5% 0.018 95);
+  --accent:     oklch(73.5% 0.058 70);          /* linen tan — the invariant */
+  --accent-ink: oklch(58% 0.07 70);
+
+  /* ink ladder — five lightness steps on one hue */
+  --ink-1: oklch(19% 0.045 var(--hue));
+  --ink-2: oklch(24% 0.05  var(--hue));
+  --ink-3: oklch(29% 0.055 var(--hue));
+  --ink-4: oklch(33% 0.055 var(--hue));
+  --ink-5: oklch(38% 0.05  var(--hue));
+
+  /* semantic surfaces */
+  --spine:  var(--ink-2);
+  --panel:  var(--ink-3);
+  --canvas: var(--paper-l);
+  --raised: var(--paper-raised-l);
+
+  --text-1: var(--ink-3);
+  --text-2: oklch(38% 0.02 100);
+  --text-3: oklch(60% 0.025 100);
+  --text-inverse: oklch(94.5% 0.012 95);
+
+  --line-soft:   oklch(91.5% 0.02 95);
+  --line-mid:    oklch(89.5% 0.02 95);
+  --line-strong: var(--ink-3);
+  --wash:        oklch(29% 0.055 var(--hue) / 5%);
+  --wash-hover:  oklch(29% 0.055 var(--hue) / 2.5%);
+
+  /* status — fixed hues, ledger-ink logic */
+  --danger:  oklch(52% 0.11 35);
+  --success: oklch(50% 0.085 150);
+  --warning: oklch(53% 0.095 75);
+
+  /* cell / control states */
+  --cell-edit-bg:   var(--ink-3);
+  --cell-edit-text: var(--text-inverse);
+  --cell-sel-bg:    oklch(90% 0.045 85);
+  --cell-sel-border: var(--accent);
+
+  /* type */
+  --font-body: 'Lexend', system-ui, sans-serif;
+  --font-num:  'Illinois Mono', 'Lexend', ui-monospace, monospace;
+
+  /* geometry */
+  --radius-s: 6px; --radius-m: 10px; --radius-round: 999px;
+
+  /* density (remapped by [data-density]) */
+  --pad-cell-y: 8px; --pad-control-y: 8px; --font-data: 13px;
+
+  /* elevation: z-order is a scale, shadow is an event */
+  --z-sticky: 10; --z-drawer: 40; --z-palette: 50; --z-toast: 60; --z-tooltip: 70;
+  --shadow-drag: 0 6px 20px oklch(19% 0.05 var(--hue) / 25%);
+
+  /* motion */
+  --t-fast: 120ms; --t-base: 200ms; --t-slow: 320ms;
+  --ease: cubic-bezier(.25,.6,.3,1);
+
+  --scroll-thumb: oklch(29% 0.055 var(--hue) / 20%);
+}
+
+[data-mode="dark"] {
+  --spine:  var(--ink-1);
+  --panel:  var(--ink-2);
+  --canvas: var(--ink-3);
+  --raised: oklch(33% 0.055 var(--hue));
+
+  --text-1: oklch(94.5% 0.012 95);
+  --text-2: oklch(87% 0.02 var(--hue));
+  --text-3: oklch(64% 0.04 var(--hue));
+
+  --line-soft:   oklch(37% 0.05 var(--hue));
+  --line-mid:    oklch(38.5% 0.05 var(--hue));
+  --line-strong: oklch(81% 0.015 95);
+  --wash:        oklch(94.5% 0.012 95 / 7%);
+  --wash-hover:  oklch(94.5% 0.012 95 / 3.5%);
+
+  --danger:  oklch(70% 0.11 35);
+  --success: oklch(72% 0.085 150);
+  --warning: oklch(74% 0.095 75);
+
+  --cell-edit-bg:   var(--accent);
+  --cell-edit-text: var(--ink-3);
+  --cell-sel-bg:    oklch(73.5% 0.058 70 / 22%);
+  --accent-ink: var(--accent);
+
+  --scroll-thumb: oklch(94.5% 0.012 95 / 18%);
+}
+
+[data-density="compact"] { --pad-cell-y: 4px; --pad-control-y: 5px; --font-data: 12.5px; }
+
+* { box-sizing: border-box; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+
+body {
+  margin: 0; font-family: var(--font-body); font-weight: 300;
+  background: var(--canvas); color: var(--text-2);
+  font-size: 15px; line-height: 1.75;
+  transition: background var(--t-slow) var(--ease), color var(--t-slow) var(--ease);
+}
+
+/* shell anatomy */
+.shell { display: flex; min-height: 100vh; }
+.spine {
+  width: 210px; flex-shrink: 0; background: var(--spine); color: var(--text-inverse);
+  padding: 40px 0 32px 28px; position: sticky; top: 0; height: 100vh;
+  display: flex; flex-direction: column;
+  transition: background var(--t-slow) var(--ease);
+  overflow-y: auto; scrollbar-width: none;
+}
+.spine::-webkit-scrollbar { display: none; }
+.wave { width: 22px; flex-shrink: 0; position: relative; }
+.wave svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.wave path { fill: var(--spine); transition: fill var(--t-slow) var(--ease); }
+.main { flex: 1; min-width: 0; padding: 48px clamp(24px, 6vw, 88px) 96px; max-width: 1020px; }
+
+.wordmark { font-size: 13px; font-weight: 500; letter-spacing: .5em; text-transform: uppercase; margin-bottom: 6px; }
+.wordmark-sub { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: oklch(94.5% .012 95 / 50%); }
+
+nav { margin-top: 36px; display: flex; flex-direction: column; gap: 2px; font-size: 13px; }
+nav a { color: oklch(94.5% .012 95 / 60%); text-decoration: none; padding: 6px 14px 6px 12px; border-radius: 8px 0 0 8px; transition: background var(--t-fast) var(--ease), color var(--t-fast) var(--ease); }
+nav a:hover, nav a:focus-visible { color: var(--text-inverse); background: oklch(94.5% .012 95 / 8%); outline: none; }
+nav a:focus-visible { box-shadow: inset 0 0 0 1.5px var(--accent); }
+
+.spine-controls { margin-top: auto; margin-right: 28px; display: flex; flex-direction: column; gap: 12px; padding-top: 24px; }
+.mode-toggle {
+  display: flex; align-items: center; gap: 10px;
+  background: oklch(94.5% .012 95 / 8%); border: 1px solid oklch(94.5% .012 95 / 25%);
+  border-radius: var(--radius-round); padding: 8px 16px; cursor: pointer;
+  color: var(--text-inverse); font-family: var(--font-body); font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+  transition: background var(--t-fast) var(--ease);
+}
+.mode-toggle:hover { background: oklch(94.5% .012 95 / 14%); }
+.mode-toggle:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+.hue-control { font-size: 11px; letter-spacing: .25em; text-transform: uppercase; color: oklch(94.5% .012 95 / 55%); }
+.hue-control input { width: 100%; margin-top: 8px; accent-color: var(--accent); }
+
+.seal {
+  width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid currentColor;
+  display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.seal svg { width: 13px; height: 13px; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+
+/* content typography */
+h1 { font-size: 30px; font-weight: 300; letter-spacing: .04em; color: var(--text-1); margin: 0 0 8px; line-height: 1.3; }
+.lede { font-size: 16px; max-width: 62ch; }
+section { margin-top: 84px; scroll-margin-top: 32px; }
+.eyebrow { font-size: 11px; font-weight: 500; letter-spacing: .35em; text-transform: uppercase; color: var(--text-3); margin-bottom: 10px; }
+h2 { font-size: 21px; font-weight: 400; letter-spacing: .03em; color: var(--text-1); margin: 0 0 16px; }
+h3 { font-size: 14px; font-weight: 500; letter-spacing: .06em; color: var(--text-1); margin: 34px 0 10px; }
+p { max-width: 68ch; margin: 0 0 14px; }
+code { font-family: var(--font-num); font-size: .86em; background: var(--raised); border-radius: 4px; padding: 2px 6px; color: var(--text-1); }
+pre { background: var(--panel); color: var(--text-inverse); border-radius: var(--radius-m); padding: 16px 20px; font-family: var(--font-num); font-size: 12.5px; line-height: 1.7; overflow-x: auto; scrollbar-width: thin; scrollbar-color: oklch(94.5% .012 95 / 25%) transparent; }
+pre code { background: none; color: inherit; padding: 0; }
+details { max-width: 720px; margin: 10px 0 4px; }
+summary { cursor: pointer; font-size: 12px; letter-spacing: .2em; text-transform: uppercase; color: var(--accent-ink); padding: 4px 0; }
+summary:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+.caption { font-size: 12px; color: var(--text-3); max-width: 660px; }
+
+/* swatches */
+.swatch-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); gap: 12px; margin: 20px 0 8px; }
+.swatch { border: 1px solid var(--line-mid); border-radius: var(--radius-m); overflow: hidden; }
+.swatch-chip { height: 62px; }
+.swatch-meta { padding: 9px 12px 11px; font-size: 12px; line-height: 1.5; }
+.swatch-meta strong { display: block; font-weight: 500; color: var(--text-1); letter-spacing: .04em; }
+.swatch-meta code { background: none; padding: 0; color: var(--text-3); font-size: 11px; }
+
+/* specimens */
+.spec { border-top: 1px solid var(--line-soft); padding: 15px 0; display: flex; gap: 24px; align-items: baseline; flex-wrap: wrap; }
+.spec-label { width: 190px; flex-shrink: 0; font-size: 11.5px; color: var(--text-3); letter-spacing: .06em; line-height: 1.6; }
+.spec-sample { color: var(--text-1); }
+
+/* demo rows */
+.demo-row { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin: 16px 0 4px; }
+.state-item { text-align: center; }
+.state-item .cap { font-size: 11px; letter-spacing: .25em; text-transform: uppercase; color: var(--text-3); margin-top: 8px; }
+
+/* ============ COMPONENT RECIPES (the library reference) ============ */
+
+/* Buttons */
+.btn {
+  font-family: var(--font-body); font-size: 13px; font-weight: 400; letter-spacing: .06em;
+  padding: var(--pad-control-y) 18px; border-radius: var(--radius-s); cursor: pointer;
+  border: 1.5px solid transparent;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease), color var(--t-fast) var(--ease);
+}
+.btn:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+.btn-primary { background: var(--cell-edit-bg); color: var(--cell-edit-text); }
+.btn-primary:hover { background: color-mix(in oklch, var(--cell-edit-bg), white 8%); }
+.btn-secondary { background: transparent; color: var(--text-1); border-color: var(--line-strong); }
+[data-mode="dark"] .btn-secondary { border-color: oklch(94.5% .012 95 / 45%); }
+.btn-secondary:hover { background: var(--wash); }
+.btn-ghost { background: transparent; color: var(--text-1); }
+.btn-ghost:hover { background: var(--wash); }
+.btn-danger { background: transparent; color: var(--danger); border-color: var(--danger); }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+
+/* Inputs */
+.field { display: flex; flex-direction: column; gap: 6px; max-width: 300px; }
+.field-label { font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--text-3); }
+.input {
+  font-family: var(--font-body); font-size: 14px; color: var(--text-1);
+  background: var(--raised); border: 1.5px solid var(--line-mid); border-radius: var(--radius-s);
+  padding: var(--pad-control-y) 12px;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+}
+.input::placeholder { color: var(--text-3); }
+.input:focus { outline: none; border-color: var(--accent); }
+.input[aria-invalid="true"] { border-color: var(--danger); }
+.field-hint { font-size: 12px; color: var(--text-3); }
+.field-error { font-size: 12px; color: var(--danger); }
+
+/* Checkbox & radio: small seals */
+.check, .radio {
+  appearance: none; width: 18px; height: 18px; margin: 0 8px 0 0; cursor: pointer;
+  border: 1.5px solid var(--text-3); background: transparent; vertical-align: -4px;
+  transition: border-color var(--t-fast) var(--ease), background var(--t-fast) var(--ease);
+  display: inline-grid; place-content: center;
+}
+.check { border-radius: 5px; } .radio { border-radius: 50%; }
+.check:hover, .radio:hover { border-color: var(--text-1); }
+.check:focus-visible, .radio:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+.check::before { content: ""; width: 10px; height: 10px; transform: scale(0); transition: transform var(--t-fast) var(--ease);
+  clip-path: polygon(14% 52%, 0 68%, 38% 100%, 100% 22%, 84% 8%, 36% 68%); background: var(--text-inverse); }
+.check:checked { background: var(--cell-edit-bg); border-color: var(--cell-edit-bg); }
+.check:checked::before { transform: scale(1); background: var(--cell-edit-text); }
+.radio::before { content: ""; width: 8px; height: 8px; border-radius: 50%; transform: scale(0); transition: transform var(--t-fast) var(--ease); background: var(--accent); }
+.radio:checked { border-color: var(--accent); }
+.radio:checked::before { transform: scale(1); }
+label.opt { font-size: 14px; color: var(--text-2); cursor: pointer; margin-right: 18px; }
+
+/* Switch: the lid in miniature */
+.switch { appearance: none; width: 40px; height: 22px; border-radius: var(--radius-round); cursor: pointer;
+  background: var(--wash); border: 1.5px solid var(--line-mid); position: relative; vertical-align: -6px; margin: 0 8px 0 0;
+  transition: background var(--t-base) var(--ease), border-color var(--t-base) var(--ease); }
+.switch::before { content: ""; position: absolute; top: 2px; left: 2px; width: 15px; height: 15px; border-radius: 50%;
+  background: var(--text-3); transition: transform var(--t-base) var(--ease), background var(--t-base) var(--ease); }
+.switch:checked { background: var(--cell-edit-bg); border-color: var(--cell-edit-bg); }
+.switch:checked::before { transform: translateX(18px); background: var(--cell-edit-text); }
+.switch:focus-visible { outline: 1.5px solid var(--accent); outline-offset: 2px; }
+
+/* Tag */
+.tag { display: inline-block; font-size: 11px; font-weight: 500; letter-spacing: .25em; text-transform: uppercase;
+  background: var(--raised); border: 1px solid var(--line-mid); color: var(--text-2);
+  border-radius: var(--radius-round); padding: 3px 12px; }
+.tag.accent { border-color: var(--accent); color: var(--accent-ink); background: transparent; }
+
+/* Slip (the card, disciplined) */
+.slip { background: var(--raised); border: 1px solid var(--line-mid); border-radius: var(--radius-m);
+  padding: 16px 18px; max-width: 260px; transition: box-shadow var(--t-base) var(--ease); }
+.slip.dragging { box-shadow: var(--shadow-drag); }
+.slip .stat-num { font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 26px; color: var(--text-1); line-height: 1.2; }
+.slip .stat-label { font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--text-3); margin-top: 4px; }
+
+/* Ledger table */
+.ledger { width: 100%; border-collapse: collapse; table-layout: fixed; margin: 18px 0 6px; max-width: 640px; }
+.ledger td, .ledger th { padding: var(--pad-cell-y) 10px; font-size: var(--font-data); text-align: left; font-weight: inherit;
+  transition: padding var(--t-fast) var(--ease); }
+.ledger th { font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; color: var(--text-3); }
+.ledger .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; text-align: right; color: var(--text-1); }
+.ledger th.num { color: var(--text-3); font-family: var(--font-body); }
+.ledger tr + tr { border-top: 1px solid var(--line-soft); }
+.ledger tr.sum { border-top: 1.5px solid var(--line-strong); }
+.ledger .col-active { background: var(--wash); }
+.ledger th.col-active { color: var(--text-1); border-radius: var(--radius-s) var(--radius-s) 0 0; }
+.ledger tr.sum .col-active { border-radius: 0 0 var(--radius-s) var(--radius-s); }
+.ledger td.text { color: var(--text-2); }
+.ledger .neg { color: var(--danger); }
+
+/* cell states */
+.cellbox { display: inline-block; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 13px;
+  border: 1.5px solid transparent; border-radius: 3px; padding: 2px 5px; color: var(--text-1);
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease); }
+.cellbox.selected { background: var(--cell-sel-bg); border-color: var(--cell-sel-border); }
+.cellbox.editing  { background: var(--cell-edit-bg); border-color: var(--cell-edit-bg); color: var(--cell-edit-text); }
+
+/* status text */
+.status { font-size: 13px; display: inline-flex; align-items: center; gap: 7px; margin-right: 22px; }
+.status i { width: 7px; height: 7px; border-radius: 50%; display: inline-block; background: currentColor; }
+
+/* scrollbar demo */
+.scroll-demo { max-width: 640px; height: 110px; overflow-y: auto; border: 1px solid var(--line-mid); border-radius: var(--radius-m);
+  padding: 12px 16px; font-size: 13px;
+  scrollbar-width: thin; scrollbar-color: var(--scroll-thumb) transparent; }
+.scroll-demo::-webkit-scrollbar { width: 8px; }
+.scroll-demo::-webkit-scrollbar-track { background: transparent; }
+.scroll-demo::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
+
+/* do / don't */
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 20px; }
+.rule { border: 1px solid var(--line-mid); border-radius: var(--radius-m); padding: 15px 18px; font-size: 13.5px; }
+.rule .cap { font-size: 11px; font-weight: 500; letter-spacing: .3em; text-transform: uppercase; margin-bottom: 8px; }
+.rule.do .cap { color: var(--accent-ink); }
+.rule.dont .cap { color: var(--text-3); text-decoration: line-through; text-decoration-thickness: 1px; }
+
+.wave-demo { display: flex; height: 130px; border-radius: var(--radius-m); overflow: hidden; border: 1px solid var(--line-mid); margin: 18px 0 6px; max-width: 640px; }
+.wave-demo .left { width: 90px; background: var(--spine); transition: background var(--t-slow) var(--ease); }
+.wave-demo .join { width: 26px; position: relative; }
+.wave-demo .join svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.wave-demo .join path { fill: var(--spine); transition: fill var(--t-slow) var(--ease); }
+.wave-demo .right { flex: 1; background: var(--canvas); transition: background var(--t-slow) var(--ease); }
+
+footer { margin-top: 96px; padding-top: 20px; border-top: 1px solid var(--line-mid); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; color: var(--text-3); display: flex; justify-content: space-between; }
+
+@media (max-width: 760px) {
+  .shell { flex-direction: column; }
+  .spine { position: static; height: auto; width: 100%; flex-direction: row; align-items: center; padding: 18px 20px; overflow: visible; }
+  .spine nav { display: none; }
+  .spine-controls { margin: 0 0 0 auto; flex-direction: row; align-items: center; padding: 0; }
+  .hue-control { display: none; }
+  .wave { display: none; }
+  .spec-label { width: 100%; }
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <aside class="spine">
+    <div>
+      <div class="wordmark">A Forest</div>
+      <div class="wordmark-sub">Design system · v0.2</div>
+    </div>
+    <nav aria-label="Sections">
+      <a href="#concept">Concept</a>
+      <a href="#color">Color &amp; themes</a>
+      <a href="#status">Status colors</a>
+      <a href="#type">Typography</a>
+      <a href="#wave-s">The wave edge</a>
+      <a href="#ledger">Ledger &amp; cells</a>
+      <a href="#atoms">Component recipes</a>
+      <a href="#slips">Slips</a>
+      <a href="#density">Density</a>
+      <a href="#elevation">Elevation</a>
+      <a href="#motion">Motion</a>
+      <a href="#scroll">Scrollbars</a>
+      <a href="#rules">Rules</a>
+    </nav>
+    <div class="spine-controls">
+      <div class="hue-control">
+        <label for="hueSlider">Ink hue · <span id="hueVal">282</span></label>
+        <input type="range" id="hueSlider" min="0" max="360" value="282">
+      </div>
+      <button class="mode-toggle" id="modeToggle" aria-pressed="false">
+        <span class="seal" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 17l5-8 4 6 3-4 6 6"/></svg></span>
+        <span id="modeLabel">Open the box</span>
+      </button>
+    </div>
+  </aside>
+
+  <div class="wave" aria-hidden="true">
+    <svg viewBox="0 0 22 800" preserveAspectRatio="none">
+      <path d="M0,0 L12,0 C19,50 5,95 10,150 C16,210 4,260 9,320 C15,380 5,430 10,490 C16,550 4,600 9,660 C14,720 6,760 10,800 L0,800 Z"/>
+    </svg>
+  </div>
+
+  <main class="main">
+    <section id="concept" style="margin-top:0;">
+      <div class="eyebrow">Concept</div>
+      <h1>The interface is a tea box.</h1>
+      <p class="lede">Two materials, one seam. Paper carries the work; ink carries the tools. They never meet in a straight line — the boundary is the wave. Light mode is the closed lid; dark mode is the opened box, tone-on-tone. One thing never changes: the linen tan, the fixed point of the system. Every rule below is derivable from this paragraph. If a component decision isn't, the decision is wrong or the paragraph is.</p>
+    </section>
+
+    <section id="color">
+      <div class="eyebrow">Foundations</div>
+      <h2>Color &amp; themes — OKLCH</h2>
+      <p>All ink colors live in OKLCH as an <strong>ink ladder</strong>: five lightness steps at one chroma band (0.045–0.055) and one hue. Theming an app means rotating <code>--hue</code> — try the slider in the spine. Paper, the tan accent, and the status hues never rotate; they are the materials that stay on the table while the ink changes.</p>
+
+      <h3>Surfaces &amp; ink</h3>
+      <div class="swatch-grid">
+        <div class="swatch"><div class="swatch-chip" style="background:var(--spine)"></div><div class="swatch-meta"><strong>spine</strong><code>ink-2 / ink-1</code></div></div>
+        <div class="swatch"><div class="swatch-chip" style="background:var(--panel)"></div><div class="swatch-meta"><strong>panel</strong><code>ink-3 / ink-2</code></div></div>
+        <div class="swatch"><div class="swatch-chip" style="background:var(--canvas);border-bottom:1px solid var(--line-mid)"></div><div class="swatch-meta"><strong>canvas</strong><code>paper / ink-3</code></div></div>
+        <div class="swatch"><div class="swatch-chip" style="background:var(--raised);border-bottom:1px solid var(--line-mid)"></div><div class="swatch-meta"><strong>raised</strong><code>paper+ / ink-4</code></div></div>
+        <div class="swatch"><div class="swatch-chip" style="background:var(--accent)"></div><div class="swatch-meta"><strong>accent · fixed</strong><code>oklch(73.5% .058 70)</code></div></div>
+        <div class="swatch"><div class="swatch-chip" style="background:var(--text-3)"></div><div class="swatch-meta"><strong>text-3</strong><code>warm / ink-tinted</code></div></div>
+      </div>
+      <details><summary>Theme recipe &amp; caveats</summary>
+<pre><code>:root { --hue: 282; }        /* indigo — flagship   */
+/* per app:  165 pine · 20 oxblood · 250 slate      */
+
+--ink-3: oklch(29% 0.055 var(--hue));
+--wash:  oklch(29% 0.055 var(--hue) / 5%);</code></pre>
+      <p class="caption">Caveats, honestly: (1) chroma 0.055 at L 19–38% is inside sRGB gamut for all hues, but if you raise chroma, yellows/cyans clip first — keep the band. (2) OKLCH lightness is perceptual, WCAG contrast is not; equal L does <em>not</em> guarantee equal contrast ratios, so every theme still runs the AA checks as acceptance tests. (3) Hues 60–100 collide with the tan accent — a theme there loses the invariant's uniqueness; skip that arc. (4) A theme is exactly one number plus passing tests. If it needs more overrides than that, it's a fork, not a theme.</p>
+      </details>
+    </section>
+
+    <section id="status">
+      <div class="eyebrow">Foundations</div>
+      <h2>Status colors</h2>
+      <p>Ledger logic: status is <strong>ink, not paint</strong>. Red ink for negative numbers is two centuries of bookkeeping — status colors appear as text, icons, thin rules, and dots, never as large fills or tinted panels. Fixed hues; only lightness flips between modes.</p>
+      <div class="demo-row">
+        <span class="status" style="color:var(--danger)"><i></i>Overdue · −1 240.00</span>
+        <span class="status" style="color:var(--success)"><i></i>Paid in full</span>
+        <span class="status" style="color:var(--warning)"><i></i>Stock below reorder point</span>
+      </div>
+      <p class="caption">Warning sits at hue 75, one step from the accent's 70 — deliberate kinship, distinguished by chroma and context (warning is text-weight ink; accent is interactive). If a screen ever makes the two ambiguous, prefer danger or neutral wording over warning. Danger doubles as the destructive-action color (see buttons).</p>
+    </section>
+
+    <section id="type">
+      <div class="eyebrow">Foundations</div>
+      <h2>Typography</h2>
+      <p>One family, two voices: <strong>Lexend</strong> for text, <strong>Illinois Mono</strong> for numbers. No display serif — brand moments are letterspacing, weight 500, uppercase. The mono/sans split doubles as data typing.</p>
+      <div class="spec"><div class="spec-label">Wordmark · Lexend 500 · .5em</div><div class="spec-sample" style="font-size:13px;font-weight:500;letter-spacing:.5em;text-transform:uppercase;">A Forest</div></div>
+      <div class="spec"><div class="spec-label">Title · 30/1.3 · Lexend 300</div><div class="spec-sample" style="font-size:30px;font-weight:300;letter-spacing:.04em;">A seat among mountains</div></div>
+      <div class="spec"><div class="spec-label">Body · 15/1.75 · Lexend 300</div><div class="spec-sample">Rolled by hand, dried on woven trays.</div></div>
+      <div class="spec"><div class="spec-label">Micro-label · 11 · 500 · .35em</div><div class="spec-sample" style="font-size:11px;font-weight:500;letter-spacing:.35em;text-transform:uppercase;color:var(--text-3);">Mountain and river</div></div>
+      <div class="spec"><div class="spec-label">Numbers · Illinois Mono · tabular</div><div class="spec-sample" style="font-family:var(--font-num);font-variant-numeric:tabular-nums;">17 901.50 · =C5*B5 · ⌘K</div></div>
+      <p class="caption" style="margin-top:14px;">Numbers: <code>tabular-nums</code>, right-aligned, narrow-space thousands (de-CH). Stack: <code>'Illinois Mono', 'Lexend', ui-monospace</code>.</p>
+    </section>
+
+    <section id="wave-s">
+      <div class="eyebrow">Signature</div>
+      <h2>The wave edge</h2>
+      <div class="wave-demo" aria-hidden="true">
+        <div class="left"></div>
+        <div class="join"><svg viewBox="0 0 26 130" preserveAspectRatio="none"><path d="M0,0 L14,0 C22,12 6,25 12,40 C18,55 4,66 10,82 C17,98 5,110 11,122 C13,127 10,128 12,130 L0,130 Z"/></svg></div>
+        <div class="right"></div>
+      </div>
+      <p class="caption">One wave per <strong>persistent</strong> surface. Transient surfaces — palette, drawer, toast — may carry it, because they are pieces of the box moving. Amplitude: 26 px documents, 12 px spreadsheets. Irregular control points; a perfect sine reads as decoration.</p>
+    </section>
+
+    <section id="ledger">
+      <div class="eyebrow">Patterns</div>
+      <h2>Ledger &amp; cells</h2>
+      <p>Horizontal hairlines only; vertical structure is a wash, never a line (fallback: below ~90 px column width, <code>line-soft</code> verticals switch on). The 1.5 px strong rule means <em>total</em>. Negative numbers set in danger ink.</p>
+      <table class="ledger">
+        <tr><th style="width:34px"></th><th>Garden</th><th class="num" style="width:20%">kg</th><th class="num col-active" style="width:24%">Price</th><th class="num" style="width:24%">Total</th></tr>
+        <tr><td class="num" style="color:var(--text-3);font-size:11px;">1</td><td class="text">Eastern ridge</td><td class="num">128.4</td><td class="num col-active">42.00</td><td class="num">5 392.80</td></tr>
+        <tr><td class="num" style="color:var(--text-3);font-size:11px;">2</td><td class="text">Valley floor · refund</td><td class="num">96.0</td><td class="num col-active">38.50</td><td class="num neg">−3 696.00</td></tr>
+        <tr><td class="num" style="color:var(--text-3);font-size:11px;">3</td><td class="text">Mist terrace</td><td class="num">54.2</td><td class="num col-active">61.00</td><td class="num">3 306.20</td></tr>
+        <tr class="sum"><td></td><td class="text" style="font-size:11px;letter-spacing:.3em;text-transform:uppercase;color:var(--text-1);">Sum</td><td class="num" style="font-weight:500;">278.6</td><td class="num col-active"></td><td class="num" style="font-weight:500;">5 003.00</td></tr>
+      </table>
+      <h3>Cell states — one box model, zero shift</h3>
+      <div class="demo-row">
+        <div class="state-item"><span class="cellbox">45.00</span><div class="cap">Idle</div></div>
+        <div class="state-item"><span class="cellbox" style="background:var(--wash-hover)">45.00</span><div class="cap">Hover</div></div>
+        <div class="state-item"><span class="cellbox selected">45.00</span><div class="cap">Selected</div></div>
+        <div class="state-item"><span class="cellbox editing">45.0|</span><div class="cap">Editing</div></div>
+      </div>
+      <p class="caption">Light mode edits in ink, dark mode edits in tan — accent and ground trade places, both pass AA. Editing is in-cell; the formula bar mirrors, it doesn't own.</p>
+    </section>
+
+    <section id="atoms">
+      <div class="eyebrow">Component recipes</div>
+      <h2>Atoms</h2>
+      <p>Each atom below is rendered live and ships with its styling recipe. Shared laws: transparent-border box model (state changes never move pixels); focus is always <code>outline: 1.5px solid var(--accent); outline-offset: 2px</code>; color/border transitions at <code>--t-fast</code>, position never transitions.</p>
+
+      <h3>Buttons</h3>
+      <div class="demo-row">
+        <button class="btn btn-primary">Save changes</button>
+        <button class="btn btn-secondary">Duplicate</button>
+        <button class="btn btn-ghost">Cancel</button>
+        <button class="btn btn-danger">Delete garden</button>
+        <button class="btn btn-primary" disabled>Save changes</button>
+      </div>
+      <details><summary>Recipe</summary>
+<pre><code>.btn        { padding: var(--pad-control-y) 18px; border: 1.5px solid transparent;
+              border-radius: var(--radius-s); letter-spacing: .06em; }
+.btn-primary   { background: var(--cell-edit-bg); color: var(--cell-edit-text); }
+.btn-secondary { border-color: var(--line-strong); color: var(--text-1); }
+.btn-ghost     { color: var(--text-1); }            /* hover: var(--wash) */
+.btn-danger    { border-color: var(--danger); color: var(--danger); }</code></pre>
+      <p class="caption">Primary shares tokens with the editing cell — one inversion logic system-wide. One primary per view. Destructive = outline danger, never filled; the filled red button is Windows-98 energy in a new coat.</p></details>
+
+      <h3>Inputs</h3>
+      <div class="demo-row" style="align-items:flex-start;">
+        <div class="field">
+          <label class="field-label" for="in1">Garden name</label>
+          <input class="input" id="in1" placeholder="Eastern ridge">
+          <span class="field-hint">Visible on the harvest ledger.</span>
+        </div>
+        <div class="field">
+          <label class="field-label" for="in2">Price / kg</label>
+          <input class="input" id="in2" value="−12.00" aria-invalid="true" style="font-family:var(--font-num);">
+          <span class="field-error">Price can't be negative.</span>
+        </div>
+      </div>
+      <details><summary>Recipe</summary>
+<pre><code>.input { background: var(--raised); border: 1.5px solid var(--line-mid);
+         border-radius: var(--radius-s); padding: var(--pad-control-y) 12px; }
+.input:focus { border-color: var(--accent); outline: none; }
+.input[aria-invalid="true"] { border-color: var(--danger); }
+/* numeric inputs: font-family: var(--font-num); text-align: right */</code></pre>
+      <p class="caption">Errors explain what happened and how to fix it — no apology, no vagueness. Label = micro-label treatment; the letterspaced caps are the form's structure, so fields need no boxes around groups.</p></details>
+
+      <h3>Checkbox · Radio · Switch</h3>
+      <div class="demo-row">
+        <label class="opt"><input type="checkbox" class="check" checked> Organic</label>
+        <label class="opt"><input type="checkbox" class="check"> Shade-grown</label>
+        <label class="opt"><input type="radio" name="r" class="radio" checked> Spring</label>
+        <label class="opt"><input type="radio" name="r" class="radio"> Autumn</label>
+        <label class="opt"><input type="checkbox" class="switch" checked> Published</label>
+      </div>
+      <details><summary>Recipe</summary>
+<pre><code>.radio { border-radius: 50%; }   /* a small seal; checked = tan dot   */
+.check { border-radius: 5px; }   /* checked = ink fill (mode-inverted) */
+.switch::before { /* thumb slides paper &#8596; ink, --t-base */ }</code></pre>
+      <p class="caption">Radios are literally small seals. Checked states reuse the editing-cell inversion. The switch is the lid in miniature — the one atom allowed a position transition, at <code>--t-base</code>, because it depicts a thing that physically slides.</p></details>
+
+      <h3>Tags &amp; micro-labels</h3>
+      <div class="demo-row">
+        <span class="tag">Oolong</span>
+        <span class="tag">Spring 2026</span>
+        <span class="tag accent">Featured</span>
+      </div>
+    </section>
+
+    <section id="slips">
+      <div class="eyebrow">Component recipes</div>
+      <h2>Slips — the card, disciplined</h2>
+      <p>Where you'd reach for a card grid, first try ledger rows or hairline-delimited regions. When a bounded object is truly needed — KPI tiles, kanban items, menus, confirm dialogs — use a <strong>slip</strong>: the paper band from the packaging. Flat, bordered, radius-m, <strong>no shadow at rest</strong>. Shadow exists in one state only: while dragged. That single constraint keeps slips from decaying into Material cards.</p>
+      <div class="demo-row" style="align-items:stretch;">
+        <div class="slip"><div class="stat-num">17 901.50</div><div class="stat-label">Revenue · Spring</div></div>
+        <div class="slip"><div class="stat-num" style="color:var(--danger)">−4.2%</div><div class="stat-label">Vs. last harvest</div></div>
+        <div class="slip dragging"><div class="stat-num">Order 5511</div><div class="stat-label">Dragging · only shadow state</div></div>
+      </div>
+      <details><summary>Recipe</summary>
+<pre><code>.slip { background: var(--raised); border: 1px solid var(--line-mid);
+        border-radius: var(--radius-m); }        /* no box-shadow */
+.slip.dragging { box-shadow: var(--shadow-drag); }  /* the only one */</code></pre></details>
+    </section>
+
+    <section id="density">
+      <div class="eyebrow">Modes</div>
+      <h2>Density</h2>
+      <p>A second attribute next to mode: <code>data-density="comfortable | compact"</code>. It remaps three tokens — <code>--pad-cell-y</code>, <code>--pad-control-y</code>, <code>--font-data</code> — and every table, input, and button follows. Spreadsheets and inventory default compact; forms and editors comfortable. Try it:</p>
+      <div class="demo-row">
+        <button class="btn btn-secondary" data-set-density="comfortable">Comfortable</button>
+        <button class="btn btn-secondary" data-set-density="compact">Compact</button>
+      </div>
+      <p class="caption">The ledger table and all inputs above respond. Density never changes type <em>scale</em> — headings and body stay put; only data rows and controls tighten.</p>
+    </section>
+
+    <section id="elevation">
+      <div class="eyebrow">Modes</div>
+      <h2>Elevation</h2>
+      <p>Stacking is a token scale; shadow is an <em>event</em>. Order: sticky headers (10) &lt; drawer (40) &lt; palette (50) &lt; toast (60) &lt; tooltip (70). Overlay scrims are the ink at low alpha — <code>oklch(19% .05 var(--hue) / 40%)</code> — the room dimming, not going grey. Shadows appear in exactly two situations: a dragged slip, and transient surfaces while entering (palette, drawer), where <code>--shadow-drag</code> doubles as their separation from the page.</p>
+    </section>
+
+    <section id="motion">
+      <div class="eyebrow">Modes</div>
+      <h2>Motion</h2>
+      <p>Paper doesn't animate; it moves. Three durations, one curve: <code>--t-fast 120ms</code> for color/border micro-feedback, <code>--t-base 200ms</code> for the switch thumb and small reveals, <code>--t-slow 320ms</code> for mode/theme changes and transient surfaces. Easing is always <code>--ease</code> (ease-out).</p>
+      <p><strong>Svelte rule:</strong> <code>transition:</code> directives are reserved for transient surfaces — <code>fly</code> for palette and drawers (pieces of the box entering), <code>fade</code> for toasts and scrims. Persistent layout changes instantly. Nothing transitions <code>top/left/width</code>; position only ever moves via transform, and only on the transient list plus the switch. <code>prefers-reduced-motion</code> zeroes everything.</p>
+    </section>
+
+    <section id="scroll">
+      <div class="eyebrow">Modes</div>
+      <h2>Scrollbars</h2>
+      <p>Default scrollbars are foreign chrome on paper. Two sanctioned treatments: <strong>styled-minimal</strong> (default) — thin thumb in <code>--scroll-thumb</code> (ink at 20% / paper at 18%), transparent track; and <strong>hidden</strong> — allowed only where the component carries its own position indicator (the spine nav, carousels, the table with its row counter). Never hidden on long-form reading surfaces.</p>
+      <div class="scroll-demo" tabindex="0">
+        <p>Steep at ninety degrees, forty seconds, and the room smells of rain on warm stone.</p>
+        <p>The spring harvest opens with mist over the eastern ridge; leaves are picked before the sun clears the valley floor.</p>
+        <p>Rolled by hand, dried on woven trays, the oolong keeps the shape of the wind that crossed it.</p>
+        <p>One cup, one journey.</p>
+      </div>
+      <details><summary>Recipe</summary>
+<pre><code>.scroll { scrollbar-width: thin;
+          scrollbar-color: var(--scroll-thumb) transparent; }
+.scroll::-webkit-scrollbar { width: 8px; }
+.scroll::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
+/* hidden variant: scrollbar-width: none; &::-webkit-scrollbar { display:none } */</code></pre></details>
+    </section>
+
+    <section id="rules">
+      <div class="eyebrow">Discipline</div>
+      <h2>Rules</h2>
+      <div class="rules">
+        <div class="rule do"><div class="cap">Do</div>Theme by rotating <code>--hue</code> only; a theme is one number plus passing contrast tests.</div>
+        <div class="rule dont"><div class="cap">Don't</div>Rotate paper, accent, or status hues — the materials stay on the table.</div>
+        <div class="rule do"><div class="cap">Do</div>Use status as ink: text, dots, thin rules, negative numbers.</div>
+        <div class="rule dont"><div class="cap">Don't</div>Paint status: no tinted panels, no filled red buttons, no large fills.</div>
+        <div class="rule do"><div class="cap">Do</div>Prefer ledger rows and hairline regions; use slips only for truly bounded objects.</div>
+        <div class="rule dont"><div class="cap">Don't</div>Shadow anything at rest. Elevation is a z-token; shadow is drag or entry.</div>
+        <div class="rule do"><div class="cap">Do</div>Reserve Svelte transitions for transient surfaces; move position via transform only.</div>
+        <div class="rule dont"><div class="cap">Don't</div>Animate persistent layout, scroll position, or anything at all under reduced-motion.</div>
+        <div class="rule do"><div class="cap">Do</div>Keep the tan accent to three appearances per view; focus ring is always tan.</div>
+        <div class="rule dont"><div class="cap">Don't</div>Ship default scrollbars, mono text-strings, a second resting wave, or neutral greys on ink.</div>
+      </div>
+    </section>
+
+    <footer>
+      <span>A Forest · v0.2</span>
+      <span>Lid / Interior · OKLCH</span>
+    </footer>
+  </main>
+</div>
+
+<script>
+const root = document.documentElement;
+const btn = document.getElementById('modeToggle');
+const label = document.getElementById('modeLabel');
+btn.addEventListener('click', () => {
+  const dark = root.getAttribute('data-mode') === 'dark';
+  root.setAttribute('data-mode', dark ? 'light' : 'dark');
+  btn.setAttribute('aria-pressed', String(!dark));
+  label.textContent = dark ? 'Open the box' : 'Close the lid';
+});
+const slider = document.getElementById('hueSlider');
+const hueVal = document.getElementById('hueVal');
+slider.addEventListener('input', () => {
+  root.style.setProperty('--hue', slider.value);
+  hueVal.textContent = slider.value;
+});
+document.querySelectorAll('[data-set-density]').forEach((b) => {
+  b.addEventListener('click', () => root.setAttribute('data-density', b.getAttribute('data-set-density')));
+});
+</script>
+</body>
+</html>

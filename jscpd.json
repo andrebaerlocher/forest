@@ -1,0 +1,15 @@
+{
+  "threshold": 5,
+  "reporters": ["console", "json"],
+  "ignore": [
+    "**/node_modules/**",
+    "**/.svelte-kit/**",
+    "**/.storybook/**",
+    "**/dist/**",
+    "**/build/**",
+    "**/*.spec.ts",
+    "**/*.test.ts",
+    "**/*.stories.svelte"
+  ],
+  "absolute": true
+}
