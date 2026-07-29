@@ -1,6 +1,8 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { fade, scale } from 'svelte/transition';
+  import { scale } from 'svelte/transition';
+  import { focusTrap } from '../actions/focusTrap.js';
+  import Scrim from '../atoms/Scrim.svelte';
   import Slip from '../molecules/Slip.svelte';
 
   interface Props {
@@ -29,17 +31,13 @@
 </script>
 
 {#if open}
-  <!-- Scrim overlay -->
-  <div
-    class="dialog-scrim"
-    onclick={onclose}
-    transition:fade={{ duration: 150 }}
-    role="presentation"
-  ></div>
+  <Scrim level="drawer" onclick={onclose} />
 
   <!-- Dialog box -->
   <div
     class="dialog-wrapper"
+    use:focusTrap
+    tabindex="-1"
     onkeydown={handleKeydown}
     role="dialog"
     aria-modal="true"
@@ -66,13 +64,6 @@
 {/if}
 
 <style>
-  .dialog-scrim {
-    position: fixed;
-    inset: 0;
-    background: oklch(19% 0.05 var(--hue) / 40%);
-    z-index: calc(var(--z-drawer) - 1);
-  }
-
   .dialog-wrapper {
     position: fixed;
     inset: 0;

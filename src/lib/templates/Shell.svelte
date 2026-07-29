@@ -19,6 +19,11 @@
     hasSecondaryPanel?: boolean;
     rail?: Snippet;
     spineChildren?: Snippet;
+    /** Rail furniture that has no home in the phone tab bar — see Spine. */
+    railFooter?: Snippet;
+    /** Phone only: is the secondary panel drawer open? Bindable so Escape
+     *  and the scrim inside Spine reach the app's header trigger. */
+    panelOpen?: boolean;
     [key: string]: any;
   }
 
@@ -38,6 +43,8 @@
     hasSecondaryPanel = false,
     rail,
     spineChildren,
+    railFooter,
+    panelOpen = $bindable(false),
     ...restProps
   }: Props = $props();
 </script>
@@ -54,6 +61,8 @@
     {collapsed}
     {hasSecondaryPanel}
     {rail}
+    {railFooter}
+    bind:panelOpen
   >
     {#if spineChildren}
       {@render spineChildren()}
@@ -150,6 +159,25 @@
   @media (max-width: 760px) {
     .shell {
       flex-direction: column;
+    }
+
+    /* The app rail is a fixed bar overlaying the canvas below this width;
+       reserve its height plus the safe area so the last screenful stays
+       reachable. */
+    .main {
+      padding-bottom: calc(96px + 56px + env(safe-area-inset-bottom, 0px));
+    }
+
+    /* In app-layout .main is the scroller but StatusBar is a sibling BELOW
+       it, so the clearance belongs to the stack, not the scroller, or the
+       footer hides under the bar. `* { box-sizing: border-box }` makes this
+       shrink the 100vh content box rather than overflow it. */
+    .shell.app-layout .canvas-stack {
+      padding-bottom: calc(56px + env(safe-area-inset-bottom, 0px));
+    }
+
+    .shell.app-layout .main.no-pad {
+      padding-bottom: 0;
     }
   }
 </style>

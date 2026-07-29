@@ -1,14 +1,16 @@
 <script lang="ts">
   import SegmentedControl from "$lib/molecules/SegmentedControl.svelte";
-  import Toast from "$lib/molecules/Toast.svelte";
   import CommandPalette from "$lib/organisms/CommandPalette.svelte";
+  import ToastRegion from "$lib/organisms/ToastRegion.svelte";
+  import { toaster } from "$lib/stores/toaster.svelte.js";
+  import CrmView from "$lib/templates/CrmView.svelte";
   import EditorView from "$lib/templates/EditorView.svelte";
   // Import the extracted views
   import SpecimenView from "$lib/templates/SpecimenView.svelte";
   import SpreadsheetView from "$lib/templates/SpreadsheetView.svelte";
 
   // View state switcher
-  let viewMode = $state("specimen"); // 'specimen' | 'editor' | 'spreadsheet'
+  let viewMode = $state("specimen"); // 'specimen' | 'editor' | 'spreadsheet' | 'crm'
 
   // Global design states
   let mode: "light" | "dark" = $state("light");
@@ -17,39 +19,37 @@
 
   // Global overlay triggers
   let paletteOpen = $state(false);
-  let toastOpen = $state(false);
-  let toastMessage = $state("");
-  let toastTimeout: any;
+
+  // The palette owns no data of its own — the app supplies its commands
+  const commands = [
+    { id: "open-doc", label: "Open document...", shortcut: "⌘O" },
+    { id: "new-doc", label: "Create new tea note", shortcut: "⌘N" },
+    { id: "export-ledger", label: "Export ledger to CSV", shortcut: "⌘E" },
+    { id: "theme-matcha", label: "Switch to Matcha theme", shortcut: "⌥M" },
+    { id: "theme-oolong", label: "Switch to Oolong theme", shortcut: "⌥O" },
+    {
+      id: "toggle-mode",
+      label: "Open / close the box lid (Toggle Mode)",
+      shortcut: "⌘D",
+    },
+  ];
 
   function triggerCommand(cmdId: string) {
-    if (typeof window !== "undefined") {
-      clearTimeout(toastTimeout);
-    }
-
     if (cmdId === "toggle-mode") {
       mode = mode === "light" ? "dark" : "light";
-      toastMessage =
+      toaster.push(
         mode === "light"
           ? "Closed the dark box (Light Mode)"
-          : "Opened the dark box (Dark Mode)";
-      toastOpen = true;
+          : "Opened the dark box (Dark Mode)",
+      );
     } else if (cmdId === "theme-matcha") {
       hue = 165;
-      toastMessage = "Switched to Matcha green theme";
-      toastOpen = true;
+      toaster.success("Switched to Matcha green theme");
     } else if (cmdId === "theme-oolong") {
       hue = 282;
-      toastMessage = "Switched to Oolong indigo theme";
-      toastOpen = true;
+      toaster.success("Switched to Oolong indigo theme");
     } else {
-      toastMessage = `Command executed: ${cmdId}`;
-      toastOpen = true;
-    }
-
-    if (typeof window !== "undefined") {
-      toastTimeout = setTimeout(() => {
-        toastOpen = false;
-      }, 3500);
+      toaster.push(`Command executed: ${cmdId}`);
     }
   }
 </script>
@@ -63,6 +63,7 @@
         { id: "specimen", label: "Specimen Guide" },
         { id: "editor", label: "Text Editor Mockup" },
         { id: "spreadsheet", label: "Spreadsheet Mockup" },
+        { id: "crm", label: "CRM Mockup" },
       ]}
       bind:activeId={viewMode}
     />
@@ -86,18 +87,23 @@
       bind:paletteOpen
       {triggerCommand}
     />
+  {:else if viewMode === "crm"}
+    <CrmView
+      bind:mode
+      bind:hue
+      bind:viewMode
+      bind:paletteOpen
+      {triggerCommand}
+    />
   {/if}
 
-  <!-- Toast message overlays -->
-  <Toast
-    open={toastOpen}
-    message={toastMessage}
-    onclose={() => (toastOpen = false)}
-  />
+  <!-- One region for the whole app; toasts stack rather than replace -->
+  <ToastRegion />
 
   <!-- Command Palette modal overlay -->
   <CommandPalette
     open={paletteOpen}
+    {commands}
     onclose={() => (paletteOpen = false)}
     onselect={triggerCommand}
   />
@@ -125,6 +131,17 @@
     border: 1.5px solid var(--accent);
     border-radius: var(--radius-m);
     box-shadow: var(--shadow-drag);
+  }
+
+  /* The app rail becomes a fixed bottom bar below 760px; lift the demo
+     switcher clear of it so both stay usable. */
+  @media (max-width: 760px) {
+    .view-mode-bar {
+      bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+      max-width: calc(100vw - 24px);
+      gap: 8px;
+      padding: 6px 10px;
+    }
   }
 
   /* Adjust theme modes for the float bar */

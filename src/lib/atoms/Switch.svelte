@@ -24,7 +24,7 @@
     bind:checked
     {disabled}
     {id}
-    class="switch"
+    class="switch hit-44"
     {...restProps}
   />
   {#if children}
@@ -97,5 +97,10 @@
 
   .switch:disabled {
     cursor: not-allowed;
+  }
+  @media (pointer: coarse) {
+    .opt {
+      min-height: 44px;
+    }
   }
 </style>

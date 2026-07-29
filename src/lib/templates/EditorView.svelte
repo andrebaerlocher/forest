@@ -25,6 +25,10 @@
     triggerCommand,
   }: Props = $props();
 
+  // Phone only: the secondary panel drawer. Bindable through Shell -> Spine
+  // so Escape and the scrim reach this trigger's aria-expanded.
+  let panelOpen = $state(false);
+
   // Text Editor interactive states
   let activeDocId = $state("doc-1");
   const documents = [
@@ -65,7 +69,7 @@
 </script>
 
 <div class="app-mockup-wrapper">
-  <Shell bind:mode bind:hue showControls={false} hasSecondaryPanel={true}>
+  <Shell bind:mode bind:hue showControls={false} bind:panelOpen hasSecondaryPanel={true}>
     <!-- Custom Left Rail Navigation Snippet -->
     {#snippet rail()}
       <div class="rail-top">
@@ -109,6 +113,9 @@
           >
         </SealButton>
       </div>
+    {/snippet}
+
+    {#snippet railFooter()}
       <div class="rail-bottom">
         <div class="wordmark-vertical">A FOREST</div>
         <SealButton
@@ -130,8 +137,8 @@
       <div class="documents-list">
         {#each documents as doc (doc.id)}
           <ListRow
+            variant="nav"
             title={doc.title}
-            subtitle="Tea ledger record"
             active={activeDocId === doc.id}
             onclick={() => (activeDocId = doc.id)}
           >
@@ -153,6 +160,18 @@
         breadcrumbs={[{ label: "一席山水" }, { label: activeDoc.title }]}
         onsearch={() => (paletteOpen = true)}
       >
+        {#snippet leading()}
+          <span class="nav-trigger">
+            <SealButton
+              onclick={() => (panelOpen = true)}
+              aria-label="Open navigation"
+              aria-expanded={panelOpen}
+              aria-haspopup="dialog"
+            >
+              <svg viewBox="0 0 24 24"><path d="M3 6h18M3 12h18M3 18h18" /></svg>
+            </SealButton>
+          </span>
+        {/snippet}
         <!-- Header action triggers -->
         <SealButton
           variant="primary"
@@ -261,7 +280,7 @@
   /* App layouts container shell */
   .app-mockup-wrapper {
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     overflow: hidden;
     position: relative;
   }
@@ -307,7 +326,7 @@
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.5em;
-    color: oklch(94.5% 0.012 95 / 40%);
+    color: var(--text-3);
     writing-mode: vertical-lr;
     text-orientation: mixed;
     transform: rotate(180deg);
@@ -321,15 +340,16 @@
     font-weight: 500;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    color: oklch(94.5% 0.012 95 / 40%);
-    margin-bottom: 18px;
-    padding-left: 12px;
+    color: var(--text-3);
+    margin: 0 0 10px;
+    padding-left: 12px; /* aligns with nav text: 2px rule + 10px pad */
+    flex-shrink: 0;
   }
 
   .documents-list {
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 2px;
   }
 
   /* Interactive Text Editor mockup layout */
@@ -373,5 +393,39 @@
     outline: none;
     width: 100%;
     padding: 0;
+  }
+  /* The rail becomes a bottom tab bar below 760px, so the drawer trigger
+     only earns its place there. */
+  .nav-trigger {
+    display: none;
+  }
+
+  @media (max-width: 760px) {
+    .nav-trigger {
+      display: inline-flex;
+    }
+  }
+
+  /* 28px seal + 14px gap = a 42px pitch, so adjacent 44px hit boxes would
+     overlap by 2px and the later sibling would win. */
+  @media (pointer: coarse) {
+    .rail-top {
+      gap: 16px;
+    }
+  }
+  /* In the phone tab bar the rail runs horizontally, so its own stack must
+     flip too — otherwise the seals pile up and the bar grows to ~170px.
+     The logo and divider are branding, not destinations; they leave. */
+  @media (max-width: 760px) {
+    .rail-top {
+      flex-direction: row;
+      justify-content: space-around;
+      gap: 4px;
+    }
+
+    .app-logo,
+    :global(.rail-divider) {
+      display: none;
+    }
   }
 </style>

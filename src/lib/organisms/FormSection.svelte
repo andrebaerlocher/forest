@@ -65,7 +65,7 @@
     flex-direction: column;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 760px) {
     .form-section {
       flex-direction: column;
       gap: 16px;

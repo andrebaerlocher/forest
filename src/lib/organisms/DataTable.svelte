@@ -1,0 +1,513 @@
+<script lang="ts">
+  import type { Snippet } from 'svelte';
+  import Checkbox from '../atoms/Checkbox.svelte';
+  import Select from '../atoms/Select.svelte';
+  import TableCell from '../atoms/TableCell.svelte';
+  import { isPhone } from '../breakpoints.svelte.js';
+  import type { DataTableColumn as Column, DataTableSort as Sort } from '../domain.js';
+  import EmptyState from '../molecules/EmptyState.svelte';
+
+  interface Props {
+    columns?: Column[];
+    rows?: Array<Record<string, any>>;
+    /** Field used as the row identity. Must be unique. */
+    rowKey?: string;
+    sort?: Sort | null;
+    selectable?: boolean;
+    selectedIds?: Array<string | number>;
+    loading?: boolean;
+    emptyTitle?: string;
+    emptyDescription?: string;
+    stickyHeader?: boolean;
+    onrowclick?: (row: Record<string, any>) => void;
+    /** Per-cell render override; falls back to the raw value */
+    cell?: Snippet<[Record<string, any>, Column]>;
+    empty?: Snippet;
+    class?: string;
+    [key: string]: any;
+  }
+
+  let {
+    columns = [],
+    rows = [],
+    rowKey = 'id',
+    sort = $bindable(null),
+    selectable = false,
+    selectedIds = $bindable([]),
+    loading = false,
+    emptyTitle = 'Nothing here yet',
+    emptyDescription = 'No records match this view.',
+    stickyHeader = true,
+    onrowclick,
+    cell,
+    empty,
+    class: className = '',
+    ...restProps
+  }: Props = $props();
+
+  const phone = isPhone();
+
+  /**
+   * Card mode is read-and-select only. It deliberately does not support
+   * EditableTableCell: that renders a literal <td>, its roving tabindex is a
+   * 2-D grid pattern, and its entry gestures (dblclick, Enter, F2,
+   * type-to-seed) have no touch equivalent. A spreadsheet never becomes cards.
+   */
+  let cards = $derived(phone.current && rows.length > 0);
+
+  let leadColumn = $derived(columns.find((c) => c.primary) ?? columns[0]);
+  let restColumns = $derived(columns.filter((c) => c !== leadColumn));
+  let sortableColumns = $derived(columns.filter((c) => c.sortable));
+
+  let sortValue = $derived(sort ? `${sort.key}:${sort.dir}` : '');
+  let sortLabel = $derived(
+    sort
+      ? `Sorted by ${columns.find((c) => c.key === sort?.key)?.label ?? sort.key}, ${
+          sort.dir === 'asc' ? 'ascending' : 'descending'
+        }`
+      : 'Unsorted'
+  );
+
+  function onSortSelect(e: Event) {
+    const v = (e.currentTarget as HTMLSelectElement).value;
+    if (!v) {
+      sort = null; // same terminal state the header's third click produces
+      return;
+    }
+    const [key, dir] = v.split(':');
+    sort = { key, dir: dir as 'asc' | 'desc' };
+  }
+
+  let allSelected = $derived(rows.length > 0 && selectedIds.length === rows.length);
+
+  function toggleAll(checked: boolean) {
+    selectedIds = checked ? rows.map((r) => r[rowKey]) : [];
+  }
+
+  function toggleRow(id: string | number, checked: boolean) {
+    selectedIds = checked ? [...selectedIds, id] : selectedIds.filter((s) => s !== id);
+  }
+
+  function toggleSort(col: Column) {
+    if (!col.sortable) return;
+    if (sort?.key !== col.key) {
+      sort = { key: col.key, dir: 'asc' };
+    } else if (sort.dir === 'asc') {
+      sort = { key: col.key, dir: 'desc' };
+    } else {
+      sort = null; // third click clears — sorting is a lens, not a mode
+    }
+  }
+
+  function ariaSort(col: Column): 'ascending' | 'descending' | 'none' | undefined {
+    if (!col.sortable) return undefined;
+    if (sort?.key !== col.key) return 'none';
+    return sort.dir === 'asc' ? 'ascending' : 'descending';
+  }
+</script>
+
+<div class="data-table-wrapper {className}" {...restProps}>
+  {#if cards}
+    <span class="sr-only" aria-live="polite">{sortLabel}</span>
+
+    {#if selectable || sortableColumns.length > 0}
+      <div class="card-controls">
+        {#if selectable}
+          <Checkbox
+            checked={allSelected}
+            onchange={(e: Event) => toggleAll((e.currentTarget as HTMLInputElement).checked)}
+          >Select all</Checkbox>
+        {/if}
+        {#if sortableColumns.length > 0}
+          <!-- No header to click in card mode, so aria-sort would be
+               meaningless. The select's current value IS the announcement,
+               and it preserves the header's tri-state exactly. -->
+          <Select value={sortValue} onchange={onSortSelect} aria-label="Sort rows">
+            <option value="">Unsorted</option>
+            {#each sortableColumns as col (col.key)}
+              <option value="{col.key}:asc">{col.label} ↑</option>
+              <option value="{col.key}:desc">{col.label} ↓</option>
+            {/each}
+          </Select>
+        {/if}
+      </div>
+    {/if}
+
+    <!-- Safari drops list semantics when list-style is none, so the role is
+         explicit. No role="table"/"row"/"cell" retrofit: a fake grid laid
+         over cards reads worse than an honest list. -->
+    <!-- biome-ignore lint/a11y/noRedundantRoles: redundant per spec, but Safari
+    drops list semantics from a ul with list-style: none, so VoiceOver stops
+    announcing the item count. The role restores it. -->
+    <ul class="card-list" role="list">
+      {#each rows as row (row[rowKey])}
+        <li class="row-card" class:selected-row={selectedIds.includes(row[rowKey])}>
+          <div class="card-head">
+            {#if selectable}
+              <Checkbox
+                checked={selectedIds.includes(row[rowKey])}
+                onchange={(e: Event) =>
+                  toggleRow(row[rowKey], (e.currentTarget as HTMLInputElement).checked)}
+                aria-label="Select row"
+              />
+            {/if}
+            {#if onrowclick}
+              <button type="button" class="card-title" onclick={() => onrowclick(row)}>
+                {#if cell}{@render cell(row, leadColumn)}{:else}{row[leadColumn.key]}{/if}
+              </button>
+            {:else}
+              <span class="card-title-static">
+                {#if cell}{@render cell(row, leadColumn)}{:else}{row[leadColumn.key]}{/if}
+              </span>
+            {/if}
+          </div>
+
+          <dl class="card-fields">
+            {#each restColumns as col (col.key)}
+              <dt class="card-label">{col.label}</dt>
+              <dd
+                class="card-value"
+                class:num={col.type === 'numeric'}
+                class:neg={col.type === 'numeric' && Number(row[col.key]) < 0}
+              >
+                {#if cell}{@render cell(row, col)}{:else}{row[col.key]}{/if}
+              </dd>
+            {/each}
+          </dl>
+        </li>
+      {/each}
+    </ul>
+  {/if}
+
+  <table class="data-table">
+    <thead class:sticky={stickyHeader}>
+      <tr>
+        {#if selectable}
+          <th class="select-col">
+            <Checkbox
+              checked={allSelected}
+              onchange={(e: Event) => toggleAll((e.currentTarget as HTMLInputElement).checked)}
+              aria-label="Select all rows"
+            />
+          </th>
+        {/if}
+        {#each columns as col (col.key)}
+          <th
+            class:num={col.type === 'numeric'}
+            class:col-active={col.active}
+            class:sortable={col.sortable}
+            style={col.width ? `width: ${col.width}` : undefined}
+            aria-sort={ariaSort(col)}
+          >
+            {#if col.sortable}
+              <button type="button" class="sort-btn" onclick={() => toggleSort(col)}>
+                <span>{col.label}</span>
+                <span class="sort-mark" aria-hidden="true">
+                  {#if sort?.key === col.key}
+                    {sort.dir === 'asc' ? '↑' : '↓'}
+                  {/if}
+                </span>
+              </button>
+            {:else}
+              {col.label}
+            {/if}
+          </th>
+        {/each}
+      </tr>
+    </thead>
+
+    <tbody>
+      {#each rows as row (row[rowKey])}
+        <tr
+          class:selected-row={selectedIds.includes(row[rowKey])}
+          class:clickable={!!onrowclick}
+          onclick={() => onrowclick?.(row)}
+        >
+          {#if selectable}
+            <td class="select-col">
+              <Checkbox
+                checked={selectedIds.includes(row[rowKey])}
+                onchange={(e: Event) =>
+                  toggleRow(row[rowKey], (e.currentTarget as HTMLInputElement).checked)}
+                aria-label="Select row"
+              />
+            </td>
+          {/if}
+          {#each columns as col (col.key)}
+            <TableCell
+              type={col.type ?? 'text'}
+              active={col.active}
+              negative={col.type === 'numeric' && Number(row[col.key]) < 0}
+            >
+              {#if cell}
+                {@render cell(row, col)}
+              {:else}
+                {row[col.key]}
+              {/if}
+            </TableCell>
+          {/each}
+        </tr>
+      {/each}
+    </tbody>
+  </table>
+
+  {#if loading}
+    <div class="table-state" role="status">Loading…</div>
+  {:else if rows.length === 0}
+    <div class="table-state">
+      {#if empty}
+        {@render empty()}
+      {:else}
+        <EmptyState title={emptyTitle} description={emptyDescription} />
+      {/if}
+    </div>
+  {/if}
+</div>
+
+<style>
+  .data-table-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) transparent;
+  }
+
+  .data-table-wrapper::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .data-table-wrapper::-webkit-scrollbar-thumb {
+    background: var(--scroll-thumb);
+    border-radius: 4px;
+  }
+
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-family: var(--font-body);
+  }
+
+  th {
+    padding: var(--pad-cell-y) 16.5px; /* matches TableCell's ring + cellbox inset */
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    text-align: left;
+    color: var(--text-3);
+    border-bottom: 1.5px solid var(--line-mid);
+    white-space: nowrap;
+  }
+
+  th.num {
+    text-align: right;
+  }
+
+  th.col-active {
+    background: var(--wash);
+    color: var(--text-1);
+    border-radius: var(--radius-s) var(--radius-s) 0 0;
+  }
+
+  thead.sticky th {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-sticky);
+    /* opaque, so rows scrolling underneath don't show through */
+    background-color: var(--canvas);
+  }
+
+  /* --wash is translucent ink; layer it as an image over the opaque canvas
+     so a sticky active column keeps both its wash and its opacity */
+  thead.sticky th.col-active {
+    background-image: linear-gradient(var(--wash), var(--wash));
+  }
+
+  .sort-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 0;
+    border: none;
+    background: transparent;
+    font: inherit;
+    letter-spacing: inherit;
+    text-transform: inherit;
+    color: inherit;
+    cursor: pointer;
+    transition: color var(--t-fast) var(--ease);
+  }
+
+  .sort-btn:hover {
+    color: var(--text-1);
+  }
+
+  .sort-btn:focus-visible {
+    outline: 1.5px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  /* reserve the glyph's width so toggling sort never reflows the header */
+  .sort-mark {
+    display: inline-block;
+    min-width: 1ch;
+    color: var(--accent-ink);
+  }
+
+  tbody tr {
+    border-bottom: 1px solid var(--line-soft);
+  }
+
+  tbody tr.clickable {
+    cursor: pointer;
+  }
+
+  /* Gated: a stuck hover reads as "selected" (.selected-row is the same
+     treatment one notch louder). */
+  @media (hover: hover) {
+    tbody tr.clickable:hover {
+      background: var(--wash-hover);
+    }
+  }
+
+  tbody tr.selected-row {
+    background: var(--wash);
+  }
+
+  .select-col {
+    width: 44px;
+    padding: var(--pad-cell-y) 12px;
+    text-align: left;
+  }
+
+  /* Checkbox ships with label spacing meant for forms, not table gutters */
+  .select-col :global(.opt) {
+    margin-right: 0;
+  }
+
+  .table-state {
+    padding: 32px 16px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-3);
+  }
+  /* ── Card mode ──────────────────────────────────────────────────────
+     Below the shell breakpoint each row becomes a label/value card.
+     <dl> is literally "label/value", and <dd> is flow content so any
+     `cell` snippet output is legal inside it — the snippet is reused
+     verbatim, it takes no table context. */
+
+  /* The table exists for one frame after hydration on a phone (mediaQuery
+     is false during SSR and the first client render). Keep it from
+     painting a 4-column grid at 390px. */
+  @media (max-width: 760px) {
+    .data-table-wrapper > .data-table {
+      display: none;
+    }
+  }
+
+  .card-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .row-card {
+    /* transparent-border box model: selecting a card shifts nothing */
+    border: 1.5px solid transparent;
+    border-bottom-color: var(--line-soft);
+    border-radius: var(--radius-s);
+    padding: 12px 14px;
+    background: transparent;
+    /* no shadow — a card is a persistent surface */
+    transition:
+      background var(--t-fast) var(--ease),
+      border-color var(--t-fast) var(--ease);
+  }
+
+  .row-card.selected-row {
+    background: var(--wash);
+    border-color: var(--cell-sel-border);
+  }
+
+  .card-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .card-title,
+  .card-title-static {
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--text-1);
+    text-align: left;
+    min-width: 0;
+  }
+
+  .card-title {
+    flex: 1;
+    background: transparent;
+    border: 1.5px solid transparent;
+    border-radius: var(--radius-s);
+    padding: 6px 4px;
+    cursor: pointer;
+    min-height: 44px;
+  }
+
+  .card-title:focus-visible {
+    outline: 1.5px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .card-fields {
+    display: grid;
+    grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+    gap: 4px 16px;
+    margin: 0;
+  }
+
+  .card-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    align-self: baseline;
+  }
+
+  .card-value {
+    margin: 0;
+    font-size: var(--font-data);
+    color: var(--text-2);
+    min-width: 0;
+  }
+
+  /* a number is still a number out of the grid */
+  .card-value.num {
+    font-family: var(--font-num);
+    font-variant-numeric: tabular-nums;
+    color: var(--text-1);
+  }
+
+  /* status is ink, not paint. No !important needed here — unlike
+     TableCell, nothing is fighting .num for the colour. */
+  .card-value.neg {
+    color: var(--danger);
+  }
+
+  .card-controls {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 0 0 12px;
+    border-bottom: 1.5px solid var(--line-mid);
+    margin-bottom: 12px;
+  }
+</style>

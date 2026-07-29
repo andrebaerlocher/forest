@@ -1,8 +1,5 @@
 <script lang="ts">
-  interface BreadcrumbItem {
-    label: string;
-    href?: string;
-  }
+  import type { BreadcrumbItem } from '../domain.js';
 
   interface Props {
     items: BreadcrumbItem[];

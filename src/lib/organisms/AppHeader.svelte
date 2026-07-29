@@ -1,16 +1,18 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { BreadcrumbItem } from '../domain.js';
   import Breadcrumb from '../molecules/Breadcrumb.svelte';
   import PaletteIndicator from '../molecules/PaletteIndicator.svelte';
-
-  interface BreadcrumbItem {
-    label: string;
-    href?: string;
-  }
 
   interface Props {
     breadcrumbs: BreadcrumbItem[];
     onsearch?: () => void;
+    /**
+     * A leading action rendered before the breadcrumb — typically the phone
+     * navigation trigger, or a back affordance. AppHeader stays neutral about
+     * width and renders it at every size; hiding it is the caller's decision.
+     */
+    leading?: Snippet;
     class?: string;
     children?: Snippet;
   }
@@ -18,6 +20,7 @@
   let {
     breadcrumbs = [],
     onsearch,
+    leading,
     class: className = '',
     children
   }: Props = $props();
@@ -25,6 +28,9 @@
 
 <header class="app-header {className}">
   <div class="left-section">
+    {#if leading}
+      {@render leading()}
+    {/if}
     <Breadcrumb items={breadcrumbs} />
   </div>
 
@@ -54,6 +60,7 @@
     display: flex;
     align-items: center;
     min-width: 0;
+    gap: 12px;
   }
 
   .right-section {

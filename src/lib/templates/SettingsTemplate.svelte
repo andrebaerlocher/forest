@@ -80,7 +80,7 @@
     gap: 24px;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 760px) {
     .settings-layout {
       flex-direction: column;
       gap: 16px;

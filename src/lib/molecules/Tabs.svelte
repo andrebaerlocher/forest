@@ -1,8 +1,5 @@
 <script lang="ts">
-  interface TabItem {
-    id: string;
-    label: string;
-  }
+  import type { SelectableItem as TabItem } from '../domain.js';
 
   interface Props {
     items: TabItem[];
@@ -65,8 +62,11 @@
     margin-bottom: -1px;
   }
 
-  .tab-btn:hover {
-    color: var(--text-1);
+  /* Gated: this is exactly .active's colour minus the rule. */
+  @media (hover: hover) {
+    .tab-btn:hover {
+      color: var(--text-1);
+    }
   }
 
   .tab-btn.active {
@@ -78,5 +78,12 @@
   .tab-btn:focus-visible {
     outline: 1.5px solid var(--accent);
     outline-offset: 2px;
+  }
+  /* A tab bar is a bar; taller is the native idiom. StatusBar re-narrows
+     these to fit its footer, so it grows in the same breath. */
+  @media (pointer: coarse) {
+    .tab-btn {
+      padding: 12px 8px 14px;
+    }
   }
 </style>

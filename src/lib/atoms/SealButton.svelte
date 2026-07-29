@@ -20,7 +20,7 @@
 
 <button
   type="button"
-  class="seal-btn variant-{variant}"
+  class="seal-btn hit-44 variant-{variant}"
   {disabled}
   {onclick}
   {...restProps}
@@ -56,9 +56,14 @@
   .seal-btn.variant-default {
     /* Inherits color, uses soft opacity */
   }
-  .seal-btn.variant-default:hover:not(:disabled) {
-    background: var(--wash);
-    opacity: 1;
+  /* Gated: this background is byte-identical to .variant-active's. On a
+     touch device a stuck hover would make a seal look like the current
+     destination — fatal in the phone tab bar. */
+  @media (hover: hover) {
+    .seal-btn.variant-default:hover:not(:disabled) {
+      background: var(--wash);
+      opacity: 1;
+    }
   }
 
   /* Active variant: representing active state (toggled on) - subtle wash-bg and mid border */

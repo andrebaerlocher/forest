@@ -85,4 +85,15 @@
     border-top-color: var(--accent);
     border-bottom-color: transparent;
   }
+  /* The --pad-control-y bump takes contained controls to ~45px, which no
+     longer fits a 38px footer. */
+  @media (pointer: coarse) {
+    .status-bar {
+      height: 48px;
+    }
+
+    :global(.status-bar .tab-btn) {
+      padding: 14px 8px 12px;
+    }
+  }
 </style>

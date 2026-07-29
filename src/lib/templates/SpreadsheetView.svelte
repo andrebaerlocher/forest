@@ -2,6 +2,7 @@
   import Divider from "$lib/atoms/Divider.svelte";
   import SealButton from "$lib/atoms/SealButton.svelte";
   import TableCell from "$lib/atoms/TableCell.svelte";
+  import EditableTableCell from "$lib/molecules/EditableTableCell.svelte";
   import Tabs from "$lib/molecules/Tabs.svelte";
   import AppHeader from "$lib/organisms/AppHeader.svelte";
   import ContextualStrip from "$lib/organisms/ContextualStrip.svelte";
@@ -24,10 +25,13 @@
     triggerCommand,
   }: Props = $props();
 
+  // Phone only: the secondary panel drawer. Bindable through Shell -> Spine
+  // so Escape and the scrim reach this trigger's aria-expanded.
+  let panelOpen = $state(false);
+
   // Spreadsheet interactive states
   let activeSheetTab = $state("harvest");
   let selectedCell = $state({ row: 3, col: "price" }); // Default selected cell D5 (River bend Price)
-  let isEditingCell = $state(false);
 
   let sheetData = $state([
     { id: 1, garden: "Eastern ridge", kg: 128.4, price: 42.0 },
@@ -55,15 +59,14 @@
     return "";
   });
 
-  // Select a cell
+  // Select a cell. Editing is owned by EditableTableCell itself.
   function selectCell(rowIdx: number, colKey: string) {
     selectedCell = { row: rowIdx, col: colKey };
-    isEditingCell = false;
   }
 </script>
 
 <div class="app-mockup-wrapper">
-  <Shell bind:mode bind:hue showControls={false} collapsed={true}>
+  <Shell bind:mode bind:hue showControls={false} bind:panelOpen collapsed={true}>
     <!-- Custom Left Rail Snippet -->
     {#snippet rail()}
       <div class="rail-top">
@@ -107,6 +110,9 @@
           >
         </SealButton>
       </div>
+    {/snippet}
+
+    {#snippet railFooter()}
       <div class="rail-bottom">
         <div class="wordmark-vertical">A FOREST</div>
         <SealButton
@@ -131,6 +137,21 @@
         ]}
         onsearch={() => (paletteOpen = true)}
       >
+        <!-- No secondary panel here, so the rail footer has no drawer to move
+             to on a phone. The mode toggle is re-homed into the header, which
+             is the documented obligation on an app in this shape. -->
+        <span class="phone-only">
+          <SealButton
+            onclick={() => triggerCommand("toggle-mode")}
+            aria-label="Toggle Box Mode"
+          >
+            <svg viewBox="0 0 24 24"
+              ><path
+                d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4 10-10S17.52 2 12 2zm1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L12 15v5c0 .35.15.66.41.87l.59.06z"
+              /></svg
+            >
+          </SealButton>
+        </span>
         <SealButton
           variant="primary"
           onclick={() => triggerCommand("export-ledger")}
@@ -222,35 +243,40 @@
             <tr>
               <td class="row-index-cell">{rIdx + 1}</td>
               <!-- Garden name cell -->
-              <TableCell
+              <EditableTableCell
+                bind:value={row.garden}
                 selected={selectedCell.row === rIdx &&
                   selectedCell.col === "garden"}
                 onclick={() => selectCell(rIdx, "garden")}
               >
                 {row.garden}
-              </TableCell>
+              </EditableTableCell>
 
               <!-- Kg cell -->
-              <TableCell
+              <EditableTableCell
                 type="numeric"
+                decimals={1}
+                bind:value={row.kg}
                 selected={selectedCell.row === rIdx &&
                   selectedCell.col === "kg"}
                 onclick={() => selectCell(rIdx, "kg")}
               >
                 {row.kg.toFixed(1)}
-              </TableCell>
+              </EditableTableCell>
 
               <!-- Price cell (active col wash) -->
-              <TableCell
+              <EditableTableCell
                 type="numeric"
+                decimals={2}
                 active={true}
                 negative={row.price < 0}
+                bind:value={row.price}
                 selected={selectedCell.row === rIdx &&
                   selectedCell.col === "price"}
                 onclick={() => selectCell(rIdx, "price")}
               >
                 {row.price < 0 ? "−" : ""}{Math.abs(row.price).toFixed(2)}
-              </TableCell>
+              </EditableTableCell>
 
               <!-- Total computed cell -->
               <TableCell
@@ -325,7 +351,7 @@
   /* App layouts container shell */
   .app-mockup-wrapper {
     height: 100vh;
-    width: 100vw;
+    width: 100%;
     overflow: hidden;
     position: relative;
   }
@@ -371,7 +397,7 @@
     font-size: 12px;
     font-weight: 500;
     letter-spacing: 0.5em;
-    color: oklch(94.5% 0.012 95 / 40%);
+    color: var(--text-3);
     writing-mode: vertical-lr;
     text-orientation: mixed;
     transform: rotate(180deg);
@@ -383,13 +409,20 @@
   .spreadsheet-container {
     flex: 1;
     padding: 24px;
-    overflow-y: auto;
+    /* Was overflow-y only — the x axis was simply missing, so at 390px the
+       four data columns divided the remainder to ~74px each, .cellbox
+       wrapped, and nothing could scroll to rescue it. A grid pans; it does
+       not become cards, because its meaning IS the address space (the A1
+       reference and the SUM row both depend on columns staying columns). */
+    overflow: auto;
+    overscroll-behavior-x: contain;
     scrollbar-width: thin;
     scrollbar-color: var(--scroll-thumb) transparent;
   }
 
   .spreadsheet-container::-webkit-scrollbar {
     width: 8px;
+    height: 8px; /* was absent: no horizontal scrollbar was drawn */
   }
 
   .spreadsheet-container::-webkit-scrollbar-thumb {
@@ -399,13 +432,29 @@
 
   .ledger-grid {
     width: 100%;
+    /* 48 index + 220 garden + 3 x 120 numeric */
+    min-width: 628px;
     border-collapse: collapse;
     table-layout: fixed;
   }
 
+  /* Under table-layout: fixed the widths come from the FIRST row — these
+     <th>s. Without them only .row-index-head had a width and the remaining
+     four columns split the leftover evenly at any viewport. */
+  .ledger-grid th:nth-child(2) {
+    width: 220px;
+  }
+
+  .ledger-grid th:nth-child(n + 3) {
+    width: 120px;
+  }
+
+  /* 16.5px matches a TableCell's total inset (1.5px ring + 15px cellbox pad),
+     so headers, row numbers and the sum row align with the data columns.
+     Does not reach TableCell's own <td> — Svelte scoping keeps them separate. */
   .ledger-grid th,
   .ledger-grid td {
-    padding: var(--pad-cell-y) 12px;
+    padding: var(--pad-cell-y) 16.5px;
     font-size: var(--font-data);
     text-align: left;
     transition: padding var(--t-fast) var(--ease);
@@ -445,8 +494,26 @@
     color: var(--text-3);
     font-size: 11px;
     user-select: none;
-    background: transparent !important;
+    /* Deliberately overrides the previous `transparent !important`: while
+       panning, data cells scroll underneath and would show through. */
+    background: var(--canvas) !important;
     border-right: 1px solid var(--line-soft);
+    position: sticky;
+    left: 0;
+    z-index: 1;
+    /* Sticky pins at the scrollport's padding edge, so the container's 24px
+       left padding stays a gutter that panned cells slide through. Extend the
+       paper across it — a solid offset shadow, no blur, no spread. */
+    box-shadow: -24px 0 0 var(--canvas);
+  }
+
+  /* One line per cell now that columns have real widths. Safe for the
+     editor: .split-input-wrapper is display:flex, and nowrap on a parent
+     does not affect flex children. */
+  :global(.ledger-grid .cellbox) {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* Sum totals calculations row */
@@ -536,5 +603,47 @@
 
   .neg-text {
     color: var(--danger) !important;
+  }
+  .phone-only {
+    display: none;
+  }
+
+  @media (max-width: 760px) {
+    .phone-only {
+      display: inline-flex;
+    }
+  }
+
+  /* 28px seal + 14px gap = a 42px pitch, so adjacent 44px hit boxes would
+     overlap by 2px and the later sibling would win. */
+  @media (pointer: coarse) {
+    .rail-top {
+      gap: 16px;
+    }
+  }
+  /* In the phone tab bar the rail runs horizontally, so its own stack must
+     flip too — otherwise the seals pile up and the bar grows to ~170px.
+     The logo and divider are branding, not destinations; they leave. */
+  @media (max-width: 760px) {
+    .rail-top {
+      flex-direction: row;
+      justify-content: space-around;
+      gap: 4px;
+    }
+
+    .app-logo,
+    :global(.rail-divider) {
+      display: none;
+    }
+  }
+  /* No horizontal gutter on a phone: sticky pins at the scrollport's padding
+     edge, so a 24px gutter would let panned cells slide through beside the
+     row numbers — visible AND tappable. At 0 the index column pins flush.
+     (The box-shadow above still covers the desktop case, where a narrow
+     window can also scroll.) */
+  @media (max-width: 760px) {
+    .spreadsheet-container {
+      padding: 16px 0;
+    }
   }
 </style>

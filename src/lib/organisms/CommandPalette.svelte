@@ -1,10 +1,18 @@
 <script lang="ts">
-  import { fade, fly } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
+  import { focusTrap } from '../actions/focusTrap.js';
   import Kbd from '../atoms/Kbd.svelte';
   import PaperTexture from '../atoms/PaperTexture.svelte';
+  import Scrim from '../atoms/Scrim.svelte';
+
+  import type { Command } from '../domain.js';
 
   interface Props {
     open: boolean;
+    /** The commands this palette offers. The component owns no data of its own. */
+    commands?: Command[];
+    placeholder?: string;
+    emptyText?: string;
     class?: string;
     onclose?: () => void;
     onselect?: (value: string) => void;
@@ -12,27 +20,31 @@
 
   let {
     open = false,
+    commands = [],
+    placeholder = 'Type a command or search...',
+    emptyText = 'No matching commands found.',
     class: className = '',
     onclose,
     onselect
   }: Props = $props();
 
   let searchVal = $state('');
-
-  const mockCommands = [
-    { id: 'open-doc', label: 'Open document...', shortcut: '⌘O' },
-    { id: 'new-doc', label: 'Create new tea note', shortcut: '⌘N' },
-    { id: 'export-ledger', label: 'Export ledger to CSV', shortcut: '⌘E' },
-    { id: 'theme-matcha', label: 'Switch to Matcha theme', shortcut: '⌥M' },
-    { id: 'theme-oolong', label: 'Switch to Oolong theme', shortcut: '⌥O' },
-    { id: 'toggle-mode', label: 'Open / close the box lid (Toggle Mode)', shortcut: '⌘D' }
-  ];
+  let highlighted = $state(0);
 
   let filtered = $derived(
-    mockCommands.filter((cmd) =>
-      cmd.label.toLowerCase().includes(searchVal.toLowerCase())
-    )
+    commands.filter((cmd) => cmd.label.toLowerCase().includes(searchVal.toLowerCase()))
   );
+
+  // Reset the cursor whenever the result set changes under it
+  $effect(() => {
+    filtered.length;
+    highlighted = 0;
+  });
+
+  // Clear the query each time the palette opens
+  $effect(() => {
+    if (open) searchVal = '';
+  });
 
   function handleSelect(id: string) {
     if (onselect) onselect(id);
@@ -42,22 +54,32 @@
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape' && onclose) {
       onclose();
+      return;
+    }
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      highlighted = Math.min(highlighted + 1, filtered.length - 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      highlighted = Math.max(highlighted - 1, 0);
+    } else if (e.key === 'Enter') {
+      const cmd = filtered[highlighted];
+      if (cmd) {
+        e.preventDefault();
+        handleSelect(cmd.id);
+      }
     }
   }
 </script>
 
 {#if open}
-  <!-- Scrim overlay (ink at low alpha) -->
-  <div
-    class="palette-scrim"
-    onclick={onclose}
-    transition:fade={{ duration: 150 }}
-    role="presentation"
-  ></div>
+  <Scrim level="palette" onclick={onclose} />
 
   <!-- Palette container panel (descending from the top with bottom wave seam) -->
   <div
     class="palette-panel {className}"
+    use:focusTrap
+    tabindex="-1"
     transition:fly={{ y: -50, duration: 250 }}
     onkeydown={handleKeydown}
     role="dialog"
@@ -75,9 +97,8 @@
           <input
             type="text"
             class="palette-input"
-            placeholder="Type a command or search..."
+            {placeholder}
             bind:value={searchVal}
-            autofocus
           />
           <Kbd>ESC</Kbd>
         </div>
@@ -86,10 +107,12 @@
 
         <!-- Suggestions list -->
         <div class="results-list">
-          {#each filtered as cmd (cmd.id)}
+          {#each filtered as cmd, i (cmd.id)}
             <button
               type="button"
               class="command-item"
+              class:highlighted={i === highlighted}
+              onmouseenter={() => (highlighted = i)}
               onclick={() => handleSelect(cmd.id)}
             >
               <span class="label">{cmd.label}</span>
@@ -98,7 +121,7 @@
               {/if}
             </button>
           {:else}
-            <div class="empty-results">No matching commands found.</div>
+            <div class="empty-results">{emptyText}</div>
           {/each}
         </div>
       </div>
@@ -107,13 +130,6 @@
 {/if}
 
 <style>
-  .palette-scrim {
-    position: fixed;
-    inset: 0;
-    background: oklch(19% 0.05 var(--hue) / 40%);
-    z-index: calc(var(--z-palette) - 1);
-  }
-
   .palette-panel {
     position: fixed;
     top: 0;
@@ -225,7 +241,8 @@
   }
 
   .command-item:hover,
-  .command-item:focus-visible {
+  .command-item:focus-visible,
+  .command-item.highlighted {
     background: oklch(94.5% 0.012 95 / 8%);
     color: #f4f0e6;
     outline: none;

@@ -1,16 +1,45 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
-  import { fade, fly } from 'svelte/transition';
+  import { fly } from 'svelte/transition';
+  import { focusTrap } from '../actions/focusTrap.js';
   import PaperTexture from '../atoms/PaperTexture.svelte';
+  import Scrim from '../atoms/Scrim.svelte';
 
   interface Props {
     open: boolean;
+    /** Which edge the drawer is anchored to. */
+    side?: 'left' | 'right';
+    /** Any CSS length. */
+    width?: string;
+    /** Accessible name. role="dialog" + aria-modal requires one. */
+    label?: string;
     class?: string;
     onclose?: () => void;
     children?: Snippet;
   }
 
-  let { open = false, class: className = '', onclose, children }: Props = $props();
+  let {
+    open = false,
+    side = 'right',
+    width = '320px',
+    label = 'Drawer',
+    class: className = '',
+    onclose,
+    children
+  }: Props = $props();
+
+  let flyX = $derived(side === 'left' ? -300 : 300);
+
+  // A drawer covering a phone screen must not let the page behind it scroll.
+  // Client-only: $effect never runs during SSR.
+  $effect(() => {
+    if (!open) return;
+    const previous = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = previous;
+    };
+  });
 
   function handleKeydown(e: KeyboardEvent) {
     if (e.key === 'Escape' && onclose) {
@@ -20,26 +49,26 @@
 </script>
 
 {#if open}
-  <!-- Scrim overlay -->
-  <div
-    class="drawer-scrim"
-    onclick={onclose}
-    transition:fade={{ duration: 150 }}
-    role="presentation"
-  ></div>
+  <Scrim level="drawer" onclick={onclose} />
 
-  <!-- Drawer panel (slides from right, has left wave seam) -->
+  <!-- The seam is always on the inboard edge: a right drawer waves on its
+       left, a left drawer waves on its right (the same geometry the desktop
+       spine uses, so the two read as one family). -->
   <div
-    class="drawer-panel {className}"
-    transition:fly={{ x: 300, duration: 250 }}
+    class="drawer-panel side-{side} {className}"
+    style="--drawer-w: {width};"
+    use:focusTrap
+    tabindex="-1"
+    transition:fly={{ x: flyX, duration: 250 }}
     onkeydown={handleKeydown}
     role="dialog"
     aria-modal="true"
+    aria-label={label}
   >
     <PaperTexture class="drawer-paper">
       <div class="drawer-content">
         {#if onclose}
-          <button type="button" class="close-btn" onclick={onclose} aria-label="Close drawer">
+          <button type="button" class="close-btn hit-44" onclick={onclose} aria-label="Close drawer">
             <svg viewBox="0 0 24 24"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         {/if}
@@ -54,23 +83,21 @@
 {/if}
 
 <style>
-  .drawer-scrim {
-    position: fixed;
-    inset: 0;
-    background: oklch(19% 0.05 var(--hue) / 40%);
-    z-index: calc(var(--z-drawer) - 1);
-  }
-
   .drawer-panel {
     position: fixed;
     top: 0;
-    right: 0;
     bottom: 0;
-    width: 320px;
+    width: var(--drawer-w, 320px);
     z-index: var(--z-drawer);
     display: flex;
-    box-shadow: var(--shadow-drag); /* Drawer gets shadow since it is transient entering */
+    /* a transient surface while entering — the sanctioned second use of shadow */
+    box-shadow: var(--shadow-drag);
     box-sizing: border-box;
+  }
+
+  .drawer-panel.side-right {
+    right: 0;
+    left: auto;
 
     -webkit-mask-image: linear-gradient(to left, black 0%, black 100%), var(--wave-mask-v-flipped);
     -webkit-mask-size: calc(100% - 22px) 100%, 22px 100%;
@@ -82,19 +109,42 @@
     mask-repeat: no-repeat, no-repeat;
   }
 
+  .drawer-panel.side-left {
+    left: 0;
+    right: auto;
+
+    -webkit-mask-image: linear-gradient(to right, black 0%, black 100%), var(--wave-mask-v);
+    -webkit-mask-size: calc(100% - 22px) 100%, 22px 100%;
+    -webkit-mask-position: left top, right top;
+    -webkit-mask-repeat: no-repeat, no-repeat;
+    mask-image: linear-gradient(to right, black 0%, black 100%), var(--wave-mask-v);
+    mask-size: calc(100% - 22px) 100%, 22px 100%;
+    mask-position: left top, right top;
+    mask-repeat: no-repeat, no-repeat;
+  }
+
   :global(.drawer-paper) {
     flex: 1;
     height: 100%;
-    border-left: 1.5px solid oklch(94.5% 0.012 95 / 25%);
     border-radius: 0;
-    padding: 24px 24px 24px 34px !important; /* increased left padding by 22px for mask */
+  }
+
+  /* the 22px the mask eats is compensated by padding on the seam side */
+  .drawer-panel.side-right :global(.drawer-paper) {
+    border-left: 1.5px solid oklch(94.5% 0.012 95 / 25%);
+    padding: 24px 24px 24px 34px !important;
+  }
+
+  .drawer-panel.side-left :global(.drawer-paper) {
+    border-right: 1.5px solid oklch(94.5% 0.012 95 / 25%);
+    padding: 24px 34px 24px 24px !important;
   }
 
   .drawer-content {
     display: flex;
     flex-direction: column;
     height: 100%;
-    color: #f4f0e6;
+    /* colour comes from .on-ink on PaperTexture — no hand-patch needed */
   }
 
   .close-btn {
@@ -102,7 +152,7 @@
     background: transparent;
     border: none;
     cursor: pointer;
-    color: oklch(94.5% 0.012 95 / 60%);
+    color: var(--text-3);
     padding: 0;
     display: flex;
     align-items: center;
@@ -112,7 +162,7 @@
   }
 
   .close-btn:hover {
-    color: #f4f0e6;
+    color: var(--text-1);
   }
 
   .close-btn svg {
@@ -127,9 +177,12 @@
 
   .drawer-body {
     flex: 1;
+    /* a column so content can push a footer down with margin-top: auto */
+    display: flex;
+    flex-direction: column;
     overflow-y: auto;
     scrollbar-width: thin;
-    scrollbar-color: oklch(94.5% 0.012 95 / 25%) transparent;
+    scrollbar-color: var(--scroll-thumb) transparent;
   }
 
   .drawer-body::-webkit-scrollbar {
@@ -137,7 +190,7 @@
   }
 
   .drawer-body::-webkit-scrollbar-thumb {
-    background: oklch(94.5% 0.012 95 / 25%);
+    background: var(--scroll-thumb);
     border-radius: 3px;
   }
 </style>

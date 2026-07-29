@@ -6,26 +6,38 @@
   interface Props {
     message?: string;
     open: boolean;
+    status?: 'neutral' | 'success' | 'warning' | 'danger';
+    /**
+     * Position itself in the corner. Set false inside a ToastRegion, which
+     * owns the positioning for the whole stack.
+     */
+    standalone?: boolean;
     class?: string;
     onclose?: () => void;
     children?: Snippet;
+    [key: string]: any;
   }
 
   let {
     message = '',
     open = false,
+    status = 'neutral',
+    standalone = true,
     class: className = '',
     onclose,
-    children
+    children,
+    ...restProps
   }: Props = $props();
 </script>
 
 {#if open}
   <div
-    class="toast-wrapper {className}"
+    class="toast-wrapper on-ink {className} status-{status}"
+    class:standalone
     transition:fly={{ x: 24, duration: 250 }}
     role="status"
     aria-live="polite"
+    {...restProps}
   >
     <PaperTexture class="toast-paper">
       <div class="toast-content">
@@ -46,16 +58,35 @@
 
 <style>
   .toast-wrapper {
+    border-radius: var(--radius-m);
+    overflow: hidden;
+    /* a transient surface entering — the sanctioned second use of shadow */
+    box-shadow: var(--shadow-drag);
+    border: 1.5px solid oklch(94.5% 0.012 95 / 25%);
+    max-width: 340px;
+    width: 100%;
+  }
+
+  /* Standalone toasts place themselves; inside a ToastRegion the region does */
+  .toast-wrapper.standalone {
     position: fixed;
     bottom: 24px;
     right: 24px;
     z-index: var(--z-toast);
-    border-radius: var(--radius-m);
-    overflow: hidden;
-    box-shadow: var(--shadow-drag);
-    border: 1.5px solid oklch(94.5% 0.012 95 / 25%);
-    max-width: 340px;
     width: calc(100vw - 48px);
+  }
+
+  /* Status as ink: a thin rule down the leading edge, never a tinted fill */
+  .toast-wrapper.status-success {
+    border-left: 3px solid var(--success);
+  }
+
+  .toast-wrapper.status-warning {
+    border-left: 3px solid var(--warning);
+  }
+
+  .toast-wrapper.status-danger {
+    border-left: 3px solid var(--danger);
   }
 
   :global(.toast-paper) {

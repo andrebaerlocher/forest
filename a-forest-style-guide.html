@@ -285,12 +285,19 @@ label.opt { font-size: 14px; color: var(--text-2); cursor: pointer; margin-right
 .ledger td.text { color: var(--text-2); }
 .ledger .neg { color: var(--danger); }
 
-/* cell states */
-.cellbox { display: inline-block; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 13px;
-  border: 1.5px solid transparent; border-radius: 3px; padding: 2px 5px; color: var(--text-1);
-  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease); }
+/* cell states — the box IS the cell. Padding lives here, not on the <td>,
+   so a state ring fills the whole cell rather than hugging the glyphs. */
+.cellbox { display: block; font-family: var(--font-num); font-variant-numeric: tabular-nums; font-size: 13px;
+  border: 1.5px solid transparent; border-radius: 3px;
+  padding: calc(var(--pad-cell-y) + 2px) 15px; color: var(--text-1); text-align: right;
+  transition: background var(--t-fast) var(--ease), border-color var(--t-fast) var(--ease),
+              box-shadow var(--t-fast) var(--ease), padding var(--t-fast) var(--ease); }
+.cell-demo { width: 104px; }
 .cellbox.selected { background: var(--cell-sel-bg); border-color: var(--cell-sel-border); }
-.cellbox.editing  { background: var(--cell-edit-bg); border-color: var(--cell-edit-bg); color: var(--cell-edit-text); }
+/* editing is the selected skin read one notch louder — an inset ring,
+   never a shadow: no elevation, no pixel shift */
+.cellbox.editing  { background: var(--cell-sel-bg); border-color: var(--cell-sel-border);
+  box-shadow: inset 0 0 0 1px var(--cell-sel-border); }
 
 /* status text */
 .status { font-size: 13px; display: inline-flex; align-items: center; gap: 7px; margin-right: 22px; }
@@ -303,6 +310,29 @@ label.opt { font-size: 14px; color: var(--text-2); cursor: pointer; margin-right
 .scroll-demo::-webkit-scrollbar { width: 8px; }
 .scroll-demo::-webkit-scrollbar-track { background: transparent; }
 .scroll-demo::-webkit-scrollbar-thumb { background: var(--scroll-thumb); border-radius: 4px; }
+
+/* ink surface scope — see #on-ink */
+.on-ink {
+  --text-1: oklch(94.5% 0.012 95);
+  --text-2: oklch(94.5% 0.012 95 / 72%);
+  --text-3: oklch(94.5% 0.012 95 / 45%);
+  --line-soft: oklch(94.5% 0.012 95 / 10%);
+  --line-mid: oklch(94.5% 0.012 95 / 18%);
+  --line-strong: oklch(94.5% 0.012 95 / 32%);
+  --wash: oklch(94.5% 0.012 95 / 10%);
+  --wash-hover: oklch(94.5% 0.012 95 / 5%);
+  --raised: oklch(94.5% 0.012 95 / 7%);
+  --danger: oklch(70% 0.11 35);
+  --success: oklch(72% 0.085 150);
+  --warning: oklch(74% 0.095 75);
+  --accent-ink: var(--accent);
+  color: var(--text-1);
+}
+.on-ink-demo { background: var(--panel); border-radius: var(--radius-m); padding: 14px 16px;
+  display: flex; flex-direction: column; gap: 3px; width: 210px;
+  border-bottom: 1px solid var(--line-soft); }
+.on-ink-title { font-size: 13.5px; color: var(--text-1); }
+.on-ink-sub { font-size: 11px; color: var(--text-3); }
 
 /* do / don't */
 .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; margin-top: 20px; }
@@ -337,11 +367,12 @@ footer { margin-top: 96px; padding-top: 20px; border-top: 1px solid var(--line-m
   <aside class="spine">
     <div>
       <div class="wordmark">A Forest</div>
-      <div class="wordmark-sub">Design system · v0.2</div>
+      <div class="wordmark-sub">Design system · v0.3</div>
     </div>
     <nav aria-label="Sections">
       <a href="#concept">Concept</a>
       <a href="#color">Color &amp; themes</a>
+      <a href="#on-ink">Ink surfaces</a>
       <a href="#status">Status colors</a>
       <a href="#type">Typography</a>
       <a href="#wave-s">The wave edge</a>
@@ -403,6 +434,35 @@ footer { margin-top: 96px; padding-top: 20px; border-top: 1px solid var(--line-m
       </details>
     </section>
 
+    <section id="on-ink">
+      <div class="eyebrow">Foundations</div>
+      <h2>Ink surfaces — <code>.on-ink</code></h2>
+      <p>The tokens above describe <em>paper</em>. A component dropped on the spine, a drawer or the palette is standing on <em>ink</em>, and every one of those tokens is now backwards: <code>--text-1</code> is near-black, <code>--line-soft</code> is a near-white paper hairline, <code>--wash</code> is dark ink at 5%. Left alone, a list row on the spine paints its title in exactly the colour of the surface behind it.</p>
+      <p>So ink surfaces carry a scope that flips the canvas tokens locally. Anything rendered inside reads correctly with no per-component override:</p>
+<pre><code>.on-ink {
+  --text-1: oklch(94.5% 0.012 95);
+  --text-2: oklch(94.5% 0.012 95 / 72%);
+  --text-3: oklch(94.5% 0.012 95 / 45%);
+  --line-soft: oklch(94.5% 0.012 95 / 10%);
+  --line-mid:  oklch(94.5% 0.012 95 / 18%);
+  --wash:      oklch(94.5% 0.012 95 / 10%);
+  --wash-hover:oklch(94.5% 0.012 95 / 5%);
+  /* status lightens to survive on ink — the dark-mode values */
+}</code></pre>
+      <div class="demo-row" style="align-items:stretch;">
+        <div class="on-ink-demo">
+          <span class="on-ink-title">Mountain and river</span>
+          <span class="on-ink-sub">Tea ledger record</span>
+        </div>
+        <div class="on-ink-demo on-ink">
+          <span class="on-ink-title">Mountain and river</span>
+          <span class="on-ink-sub">Tea ledger record</span>
+        </div>
+      </div>
+      <p class="caption">Left: canvas tokens on ink — the title is invisible because <code>--text-1</code> and the panel are the same ladder step. Right: the same markup inside <code>.on-ink</code>.</p>
+      <p class="caption">Every value is the inverse text colour at some alpha, so no new colour enters the palette and <code>--hue</code> is untouched. Two are deliberately <em>not</em> flipped: <code>--text-inverse</code> already means "the light ink that goes on dark paper", and <code>--canvas</code>, because paper never rotates. Ink paper looks identical in light and dark mode, so the scope carries one set of values rather than two.</p>
+    </section>
+
     <section id="status">
       <div class="eyebrow">Foundations</div>
       <h2>Status colors</h2>
@@ -451,12 +511,25 @@ footer { margin-top: 96px; padding-top: 20px; border-top: 1px solid var(--line-m
       </table>
       <h3>Cell states — one box model, zero shift</h3>
       <div class="demo-row">
-        <div class="state-item"><span class="cellbox">45.00</span><div class="cap">Idle</div></div>
-        <div class="state-item"><span class="cellbox" style="background:var(--wash-hover)">45.00</span><div class="cap">Hover</div></div>
-        <div class="state-item"><span class="cellbox selected">45.00</span><div class="cap">Selected</div></div>
-        <div class="state-item"><span class="cellbox editing">45.0|</span><div class="cap">Editing</div></div>
+        <div class="state-item"><div class="cell-demo"><span class="cellbox">45.00</span></div><div class="cap">Idle</div></div>
+        <div class="state-item"><div class="cell-demo"><span class="cellbox" style="background:var(--wash-hover)">45.00</span></div><div class="cap">Hover</div></div>
+        <div class="state-item"><div class="cell-demo"><span class="cellbox selected">45.00</span></div><div class="cap">Selected</div></div>
+        <div class="state-item"><div class="cell-demo"><span class="cellbox editing">45.0|</span></div><div class="cap">Editing</div></div>
       </div>
-      <p class="caption">Light mode edits in ink, dark mode edits in tan — accent and ground trade places, both pass AA. Editing is in-cell; the formula bar mirrors, it doesn't own.</p>
+      <details><summary>Recipe</summary>
+<pre><code>td       { padding: 0; }            /* the cell contributes no inset      */
+.cellbox { display: block;          /* …the box does, so rings fill the cell */
+           padding: calc(var(--pad-cell-y) + 2px) 15px;
+           border: 1.5px solid transparent; border-radius: 3px; }
+.cellbox.selected { background: var(--cell-sel-bg);
+                    border-color: var(--cell-sel-border); }
+.cellbox.editing  { background: var(--cell-sel-bg);
+                    border-color: var(--cell-sel-border);
+                    box-shadow: inset 0 0 0 1px var(--cell-sel-border); }</code></pre>
+      <p class="caption">The <code>calc()</code> matters: it re-absorbs the inset the <code>&lt;td&gt;</code> used to contribute, so moving the padding onto the box changes no row height and no column width. <code>[data-density]</code> still remaps, because <code>--pad-cell-y</code> is inherited and just as reachable on the box.</p>
+      </details>
+      <p class="caption"><strong>Selecting and editing wear the same skin.</strong> Selection is the state you read a cell in; editing is the same cell with a caret, so it earns emphasis (a 1 px inset ring), not a different material. Two consequences worth having: a negative number stays in danger ink while you edit it, and the tan ring is the one selection idiom across cells, calendar days and list rows. Click selects; double-click, <code>Enter</code>, <code>F2</code> or simply typing opens the editor. Editing is in-cell; the formula bar mirrors, it doesn't own.</p>
+      <p class="caption">The older rule — light mode edits in ink, dark mode edits in tan — is retired. <code>--cell-edit-bg</code> and <code>--cell-edit-text</code> survive as the system's <em>inversion</em> pair: they still drive the primary button, the checked box, the switch and the active segment.</p>
     </section>
 
     <section id="atoms">
@@ -595,11 +668,15 @@ footer { margin-top: 96px; padding-top: 20px; border-top: 1px solid var(--line-m
         <div class="rule dont"><div class="cap">Don't</div>Animate persistent layout, scroll position, or anything at all under reduced-motion.</div>
         <div class="rule do"><div class="cap">Do</div>Keep the tan accent to three appearances per view; focus ring is always tan.</div>
         <div class="rule dont"><div class="cap">Don't</div>Ship default scrollbars, mono text-strings, a second resting wave, or neutral greys on ink.</div>
+        <div class="rule do"><div class="cap">Do</div>Wrap anything standing on ink in <code>.on-ink</code>; let the tokens flip once, centrally.</div>
+        <div class="rule dont"><div class="cap">Don't</div>Hand-patch a component's colours because it landed on the spine — that's the scope's job.</div>
+        <div class="rule do"><div class="cap">Do</div>Let the state ring fill the whole cell; selection and editing share one skin.</div>
+        <div class="rule dont"><div class="cap">Don't</div>Put padding on both the cell and its box — the inset belongs to exactly one of them.</div>
       </div>
     </section>
 
     <footer>
-      <span>A Forest · v0.2</span>
+      <span>A Forest · v0.3</span>
       <span>Lid / Interior · OKLCH</span>
     </footer>
   </main>

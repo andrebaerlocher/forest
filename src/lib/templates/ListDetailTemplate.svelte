@@ -73,7 +73,7 @@
     border-radius: 4px;
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 760px) {
     .list-detail-layout {
       flex-direction: column;
     }

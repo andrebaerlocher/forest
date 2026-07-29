@@ -56,4 +56,12 @@
     height: 16px;
     align-self: center;
   }
+  /* Same consequence as StatusBar: a ~45px Input does not fit a 40px strip.
+     Height becomes a floor rather than a fixed value so it can grow. */
+  @media (pointer: coarse) {
+    .contextual-strip {
+      height: auto;
+      min-height: 56px;
+    }
+  }
 </style>

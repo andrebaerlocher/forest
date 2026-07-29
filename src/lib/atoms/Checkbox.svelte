@@ -24,7 +24,7 @@
     bind:checked
     {disabled}
     {id}
-    class="check"
+    class="check hit-44"
     {...restProps}
   />
   {#if children}
@@ -96,5 +96,12 @@
 
   .check:disabled {
     cursor: not-allowed;
+  }
+  /* A 44px hit box on an 18px mark overflows the label's line box, so
+     stacked options would steal each other's taps. */
+  @media (pointer: coarse) {
+    .opt {
+      min-height: 44px;
+    }
   }
 </style>

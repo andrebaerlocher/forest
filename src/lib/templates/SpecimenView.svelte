@@ -5,6 +5,7 @@
   import Radio from "$lib/atoms/Radio.svelte";
   import Select from "$lib/atoms/Select.svelte";
   import Switch from "$lib/atoms/Switch.svelte";
+  import TableCell from "$lib/atoms/TableCell.svelte";
   import Tag from "$lib/atoms/Tag.svelte";
   import FormField from "$lib/molecules/FormField.svelte";
   import Slip from "$lib/molecules/Slip.svelte";
@@ -31,6 +32,39 @@
   let gardenName = $state("");
   let price = $state("−12.00");
   let activeCol = $state("Price");
+
+  // The ledger specimen: horizontal hairlines, a washed active column,
+  // and a negative total set in danger ink.
+  const ledgerRows = [
+    { id: 1, garden: "Eastern ridge", kg: 128.4, price: 42.0 },
+    { id: 2, garden: "Valley floor · refund", kg: 96.0, price: -38.5 },
+    { id: 3, garden: "Mist terrace", kg: 54.2, price: 61.0 },
+  ];
+  const ledgerSumKg = ledgerRows.reduce((acc, r) => acc + r.kg, 0);
+  const ledgerSumTotal = ledgerRows.reduce((acc, r) => acc + r.kg * r.price, 0);
+
+  // Cell states demo — rendered with the real atom so the specimen can never
+  // drift from the component.
+  const cellStates = [
+    { key: "idle", caption: "Idle", text: "45.00", hover: false, selected: false, editing: false },
+    { key: "hover", caption: "Hover", text: "45.00", hover: true, selected: false, editing: false },
+    {
+      key: "selected",
+      caption: "Selected",
+      text: "45.00",
+      hover: false,
+      selected: true,
+      editing: false,
+    },
+    {
+      key: "editing",
+      caption: "Editing",
+      text: "45.0|",
+      hover: false,
+      selected: false,
+      editing: true,
+    },
+  ];
 
   const links = [
     { href: "#concept", label: "Concept" },
@@ -190,26 +224,65 @@
       The 1.5 px strong rule means <em>total</em>. Negative numbers set in
       danger ink.
     </p>
-    <LedgerTable bind:activeCol />
+    <LedgerTable bind:activeCol>
+      {#snippet headers()}
+        <tr>
+          <th class="idx-col"></th>
+          <th>Garden</th>
+          <th class="num kg-col">kg</th>
+          <th class="num price-col col-active">Price</th>
+          <th class="num total-col">Total</th>
+        </tr>
+      {/snippet}
+
+      {#snippet rows()}
+        {#each ledgerRows as row (row.id)}
+          <tr>
+            <td class="num row-idx">{row.id}</td>
+            <td class="text">{row.garden}</td>
+            <td class="num">{row.kg.toFixed(1)}</td>
+            <td class="num col-active">{row.price.toFixed(2)}</td>
+            <td class="num" class:neg={row.kg * row.price < 0}>
+              {row.kg * row.price < 0 ? "−" : ""}{Math.abs(
+                row.kg * row.price,
+              ).toFixed(2)}
+            </td>
+          </tr>
+        {/each}
+      {/snippet}
+
+      {#snippet summary()}
+        <tr class="sum">
+          <td></td>
+          <td class="text sum-label">Sum</td>
+          <td class="num sum-value">{ledgerSumKg.toFixed(1)}</td>
+          <td class="num col-active"></td>
+          <td class="num sum-value">{ledgerSumTotal.toFixed(2)}</td>
+        </tr>
+      {/snippet}
+    </LedgerTable>
 
     <h3 class="sub-title">Cell states</h3>
     <div class="demo-row">
-      <div class="state-item">
-        <span class="cellbox">45.00</span>
-        <div class="state-label">Idle</div>
-      </div>
-      <div class="state-item">
-        <span class="cellbox hover-state">45.00</span>
-        <div class="state-label">Hover</div>
-      </div>
-      <div class="state-item">
-        <span class="cellbox selected">45.00</span>
-        <div class="state-label">Selected</div>
-      </div>
-      <div class="state-item">
-        <span class="cellbox editing">45.0|</span>
-        <div class="state-label">Editing</div>
-      </div>
+      {#each cellStates as state (state.key)}
+        <div class="state-item">
+          <table class="cell-demo-table">
+            <tbody>
+              <tr>
+                <TableCell
+                  type="numeric"
+                  hover={state.hover}
+                  selected={state.selected}
+                  editing={state.editing}
+                >
+                  {state.text}
+                </TableCell>
+              </tr>
+            </tbody>
+          </table>
+          <div class="state-label">{state.caption}</div>
+        </div>
+      {/each}
     </div>
   </section>
 
@@ -619,8 +692,41 @@
     text-align: center;
   }
 
-  .hover-state {
-    background: var(--wash-hover);
+  .cell-demo-table {
+    width: 96px;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  /* Ledger specimen column widths and the row-number gutter */
+  :global(.ledger .idx-col) {
+    width: 34px;
+  }
+
+  :global(.ledger .kg-col),
+  :global(.ledger .total-col) {
+    width: 20%;
+  }
+
+  :global(.ledger .price-col) {
+    width: 24%;
+  }
+
+  :global(.ledger .row-idx) {
+    color: var(--text-3);
+    font-size: 11px;
+  }
+
+  :global(.ledger .sum-label) {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-1);
+  }
+
+  :global(.ledger .sum-value) {
+    font-weight: 500;
   }
 
   .state-label {

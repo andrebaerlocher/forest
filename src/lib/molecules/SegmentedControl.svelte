@@ -1,8 +1,5 @@
 <script lang="ts">
-  interface Option {
-    id: string;
-    label: string;
-  }
+  import type { SelectableItem as Option } from '../domain.js';
 
   interface Props {
     items: Option[];

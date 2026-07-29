@@ -9,7 +9,8 @@
   let { class: className = '', children }: Props = $props();
 </script>
 
-<div class="indigo-paper {className}">
+<!-- .on-ink flips the canvas tokens for everything rendered on this paper -->
+<div class="indigo-paper on-ink {className}">
   {#if children}
     {@render children()}
   {/if}

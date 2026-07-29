@@ -104,29 +104,6 @@
     color: var(--danger);
   }
 
-  /* Cell states */
-  :global(.cellbox) {
-    display: inline-block;
-    font-family: var(--font-num);
-    font-variant-numeric: tabular-nums;
-    font-size: 13px;
-    border: 1.5px solid transparent;
-    border-radius: 3px;
-    padding: 2px 5px;
-    color: var(--text-1);
-    transition:
-      background var(--t-fast) var(--ease),
-      border-color var(--t-fast) var(--ease);
-  }
-
-  :global(.cellbox.selected) {
-    background: var(--cell-sel-bg);
-    border-color: var(--cell-sel-border);
-  }
-
-  :global(.cellbox.editing) {
-    background: var(--cell-edit-bg);
-    border-color: var(--cell-edit-bg);
-    color: var(--cell-edit-text);
-  }
+  /* Cell states live in atoms/TableCell.svelte — this component must not
+     duplicate them globally. */
 </style>

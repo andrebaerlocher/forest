@@ -57,10 +57,13 @@
       color var(--t-fast) var(--ease);
   }
 
-  :global(.dropdown-menu button:hover),
-  :global(.dropdown-menu a:hover) {
-    background: var(--wash);
-    color: var(--text-1);
+  /* Gated: a stuck hover reads as the highlighted option. */
+  @media (hover: hover) {
+    :global(.dropdown-menu button:hover),
+    :global(.dropdown-menu a:hover) {
+      background: var(--wash);
+      color: var(--text-1);
+    }
   }
 
   :global(.dropdown-menu button:focus-visible),

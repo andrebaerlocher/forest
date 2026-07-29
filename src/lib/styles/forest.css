@@ -101,7 +101,61 @@
   /* wave masks */
   --wave-mask-v: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2022%20800%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%2C0%20L12%2C0%20C19%2C50%205%2C95%2010%2C150%20C16%2C210%204%2C260%209%2C320%20C15%2C380%205%2C430%2010%2C490%20C16%2C550%204%2C600%209%2C660%20C14%2C720%206%2C760%2010%2C800%20L0%2C800%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
   --wave-mask-v-flipped: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%2022%20800%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M22%2C0%20L10%2C0%20C3%2C50%2017%2C95%2012%2C150%20C6%2C210%2018%2C260%2013%2C320%20C7%2C380%2017%2C430%2012%2C490%20C6%2C550%2018%2C600%2013%2C660%20C8%2C720%2016%2C760%2012%2C800%20L22%2C800%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
-  --wave-mask-h: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%2022%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%2C0%20L0%2C12%20C50%2C19%2095%2C5%20150%2C10%20C210%2C16%20260%2C4%20320%2C9%20C380%2C15%20430%2C5%20490%2C10%20C550%2C16%20600%2C4%20660%2C9%20C720%2C14%20760%2C6%20800%2010%20L800%2C0%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  /* solid at the top, wavy bottom edge.
+     Was malformed: a missing quote after `22` swallowed preserveAspectRatio
+     into the viewBox value, so the mask never scaled. */
+  --wave-mask-h: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%2022%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%2C0%20L0%2C12%20C50%2C19%2095%2C5%20150%2C10%20C210%2C16%20260%2C4%20320%2C9%20C380%2C15%20430%2C5%20490%2C10%20C550%2C16%20600%2C4%20660%2C9%20C720%2C14%20760%2C6%20800%2C10%20L800%2C0%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+  /* solid at the bottom, wavy top edge — for surfaces anchored to the bottom
+     of the viewport. Exact y-mirror of --wave-mask-h about y=11. */
+  --wave-mask-h-flipped: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20viewBox%3D%220%200%20800%2022%22%20preserveAspectRatio%3D%22none%22%3E%3Cpath%20d%3D%22M0%2C22%20L0%2C10%20C50%2C3%2095%2C17%20150%2C12%20C210%2C6%20260%2C18%20320%2C13%20C380%2C7%20430%2C17%20490%2C12%20C550%2C6%20600%2C18%20660%2C13%20C720%2C8%20760%2C16%20800%2C12%20L800%2C22%20Z%22%20fill%3D%22black%22%2F%3E%3C%2Fsvg%3E");
+}
+
+/* ─────────────────────────────────────────────────────────────
+   BREAKPOINTS — the authoritative scale.
+
+   These four numbers are the ONLY viewport widths this system
+   reacts to. Every @media rule in src/lib must use one of them,
+   spelled as a literal.
+
+     600px   --bp-field   a field's label stops sitting beside
+                          its control                  (FieldRow)
+     760px   --bp-shell   THE structural line. Navigation
+                          restructures; nothing is side by side
+                          below it; tables become cards.
+                          (Spine, Shell, DataTable, FormSection,
+                           SettingsTemplate, ListDetailTemplate)
+     1100px  --bp-split   a secondary pane beside a primary one
+                          collapses                     (CrmView)
+     1440px  --bp-wide    reserved. no consumer yet.
+
+   ── WHY THESE ARE LITERALS, AND MUST STAY LITERALS ────────────
+   CSS custom properties are NOT permitted inside a media
+   condition — `@media (max-width: var(--bp-shell))` is invalid
+   CSS and is silently dropped by every engine. This project has
+   no PostCSS, no Sass and no preprocessor (see package.json and
+   vite.config.ts), so nothing could substitute the value at
+   build time.
+
+   The --bp-* properties below therefore exist for exactly two
+   purposes: clamp()/calc() arithmetic, and being read from
+   TypeScript. They do NOT drive the queries. Do not "fix" the
+   queries to reference them — you will break every responsive
+   rule in the library, and the failure is silent.
+
+   Each number lives in exactly two places: here, and in
+   src/lib/breakpoints.ts for the JS side. Change both or neither.
+
+   Spine carries the only complementary pair in the codebase:
+   `max-width: 760px` and `min-width: 761px`. They must stay
+   exactly adjacent — a 1px gap leaves the spine unstyled at that
+   width; an overlap applies both the desktop wave mask and the
+   phone bottom bar at once.
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bp-field: 600px;
+  --bp-shell: 760px;
+  --bp-split: 1100px;
+  --bp-wide: 1440px;
 }
 
 [data-mode="dark"] {
@@ -134,10 +188,123 @@
   --scroll-thumb: oklch(94.5% 0.012 95 / 18%);
 }
 
+/* ─────────────────────────────────────────────────────────────
+   Ink surfaces. Any dark paper — spine, drawer, palette, toast —
+   flips the canvas-mode tokens locally, so any component dropped
+   on it reads correctly without per-component overrides.
+   Values are mode-independent: ink paper is identical in light
+   and dark mode. Every one is --text-inverse at some alpha, so
+   no new colour enters the palette and --hue is untouched.
+   ───────────────────────────────────────────────────────────── */
+.on-ink,
+[data-surface="ink"] {
+  --text-1: oklch(94.5% 0.012 95);
+  --text-2: oklch(94.5% 0.012 95 / 72%);
+  --text-3: oklch(94.5% 0.012 95 / 45%);
+
+  --line-soft: oklch(94.5% 0.012 95 / 10%);
+  --line-mid: oklch(94.5% 0.012 95 / 18%);
+  --line-strong: oklch(94.5% 0.012 95 / 32%);
+
+  --wash: oklch(94.5% 0.012 95 / 10%);
+  --wash-hover: oklch(94.5% 0.012 95 / 5%);
+  --raised: oklch(94.5% 0.012 95 / 7%);
+
+  --scroll-thumb: oklch(94.5% 0.012 95 / 25%);
+
+  --neomorphic-shadow: oklch(8% 0.01 var(--hue) / 35%);
+  --neomorphic-highlight: oklch(94.5% 0.012 95 / 8%);
+
+  /* status stays ink, but must lighten to survive on ink */
+  --danger: oklch(70% 0.11 35);
+  --success: oklch(72% 0.085 150);
+  --warning: oklch(74% 0.095 75);
+
+  --accent-ink: var(--accent);
+
+  color: var(--text-1);
+}
+
+/* Deliberately NOT remapped here:
+   --text-inverse — consumers use it to mean "the light ink that goes on dark
+     paper", so flipping it would turn nav hover black-on-black.
+   --canvas — paper surfaces never rotate. */
+
 [data-density="compact"] {
   --pad-cell-y: 4px;
   --pad-control-y: 5px;
   --font-data: 12.5px;
+}
+
+/* ─────────────────────────────────────────────────────────────
+   COARSE POINTERS
+
+   The seal is 28px because the paper says 28px. A 44px tan disc
+   would read as a button, not a seal. So on a coarse pointer the
+   TARGET grows and the INK does not: a transparent ::after,
+   centred on the control, clamped to 44px in both axes.
+
+   ::after is free on every control that opts in — Checkbox,
+   Radio and Switch use ::before for the mark/thumb; SealButton
+   uses no pseudo-element at all.
+
+   Contract for anything wearing .hit-44:
+     · it must not already use ::after
+     · no ancestor between it and the 44px box may clip
+       (overflow: hidden), or the expansion is cut off
+     · siblings must sit >= 44px apart on centre, or the later
+       sibling's box wins the overlap
+
+   ORDER MATTERS: this block must stay AFTER [data-density=
+   "compact"]. They have identical specificity, so source order
+   alone decides. Move it above and compact silently wins on
+   touch, shrinking every control to 31px.
+   ───────────────────────────────────────────────────────────── */
+@media (pointer: coarse) {
+  .hit-44 {
+    position: relative;
+  }
+
+  .hit-44::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: max(100%, 44px);
+    height: max(100%, 44px);
+    transform: translate(-50%, -50%);
+    /* No paint: no background, no border, no shadow. A generated box is
+       hit-tested as part of its originating element, so this captures the
+       tap and the event still targets the control.
+       Never add pointer-events: none — that defeats the whole point. */
+  }
+
+  /* Controls that already derive their height from a token get it free.
+     8px -> 12px takes Button / Input / Select / SegmentedControl from
+     ~37px to ~45px with no per-component edit. */
+  :root {
+    --pad-control-y: 12px;
+  }
+
+  /* Compact is a user's stated choice to trade target size for density.
+     A device capability must not override it — but 5px is unusable on a
+     finger, so it still gets a bump. */
+  [data-density="compact"] {
+    --pad-control-y: 8px;
+  }
+}
+
+/* Visible to assistive tech, not to the eye. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
 }
 
 * {
