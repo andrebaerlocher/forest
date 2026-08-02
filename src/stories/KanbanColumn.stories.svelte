@@ -1,7 +1,7 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
-  import StatusPill from '../lib/atoms/StatusPill.svelte';
   import ListRow from '../lib/molecules/ListRow.svelte';
+  import StatusPill from '../lib/molecules/StatusPill.svelte';
   import KanbanColumn from '../lib/organisms/KanbanColumn.svelte';
 
   const { Story } = defineMeta({

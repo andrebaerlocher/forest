@@ -207,12 +207,14 @@
     getRootNodes: () => nodes,
   };
 
-  const isRootNode = level === 0;
-  if (isRootNode) {
-    setContext(TREE_CONTEXT_KEY, rootCtx);
-  }
+  let isRootNode = $derived(level === 0);
+  $effect(() => {
+    if (isRootNode) {
+      setContext(TREE_CONTEXT_KEY, rootCtx);
+    }
+  });
 
-  const ctx: TreeContext<T> = isRootNode ? rootCtx : getContext<TreeContext<T>>(TREE_CONTEXT_KEY);
+  const ctx: TreeContext<T> = $derived(isRootNode ? rootCtx : getContext<TreeContext<T>>(TREE_CONTEXT_KEY));
 
   $effect(() => {
     if (isRootNode && selectedId && activeNodeId !== selectedId) {

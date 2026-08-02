@@ -1,6 +1,6 @@
 <script module>
   import { defineMeta } from '@storybook/addon-svelte-csf';
-  import StatusPill from '../lib/atoms/StatusPill.svelte';
+  import StatusPill from '../lib/molecules/StatusPill.svelte';
   import DetailPanel from '../lib/organisms/DetailPanel.svelte';
 
   const { Story } = defineMeta({
