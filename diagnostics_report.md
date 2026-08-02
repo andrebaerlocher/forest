@@ -1,6 +1,6 @@
 # Forest Diagnostics Report
 
-Generated on: 2026-08-02T08:51:35.221Z
+Generated on: 2026-08-02T08:57:44.006Z
 
 | Check | Command | Status | Description |
 |---|---|---|---|
@@ -15,7 +15,7 @@ Generated on: 2026-08-02T08:51:35.221Z
 ### Biome Linter & Formatter (✅ PASS)
 
 ```text
-Checked 209 files in 166ms. No fixes applied.
+Checked 209 files in 188ms. No fixes applied.
 Found 6 warnings.
 ```
 
@@ -208,23 +208,68 @@ svelte-doctor v0.3.3
     Remove the export or add it to a public API surface if it is intentional
     src/test-support/test-component-loader.ts
 
+  ⚠ Dependency . appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/client/_app/immutable/chunks/D8Wne67o.js:1
+
+  ⚠ Dependency ../chunks appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/client/_app/immutable/entry/app.CVnqstGn.js:1
+
+  ⚠ Dependency @sveltejs appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/chunks/exports.js:1
+
+  ⚠ Dependency .. appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/chunks/internal.js:1
+
+  ⚠ Dependency @sveltejs/kit appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/chunks/shared.js:1
+
+  ⚠ Dependency @standard-schema appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/chunks/utils.js:1
+
+  ⚠ Dependency ../.. appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/entries/pages/_error.svelte.js:1
+
+  ⚠ Dependency $app appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/entries/pages/_error.svelte.js:1
+
+  ⚠ Dependency ./chunks appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/env.js:1
+
+  ⚠ Dependency ./nodes appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/manifest-full.js:1
+
+  ⚠ Dependency ../entries appears across multiple chunks
+    Inspect Vite chunking and manualChunks config so shared dependencies are emitted once instead of duplicated.
+    .svelte-kit/output/server/nodes/0.js:1
+
 
   ┌─────────────────────────────────────────────────┐
   │  Svelte Doctor  (svelte-doctor)           │
   │                                                 │
-  │  Score: 15 / 100  Critical                      │
+  │  Score: 14 / 100  Critical                      │
   │                                                 │
   │  ██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░       │
   │                                                 │
-  │  ⚠ 151 warnings  39/352 files  1 fixable  1.2s  │
+  │  ⚠ 162 warnings  49/352 files  1 fixable  1.2s  │
   └─────────────────────────────────────────────────┘
-  Ignore suggestions: 0 diagnostics can likely be ignored.
+  Ignore suggestions: 11 diagnostics can likely be ignored.
   Potential bundle savings: 0KB.
 
   Category breakdown:
     Performance: 125 warnings  penalty 125.0
     State & Reactivity: 15 warnings  penalty 18.0
     Architecture: 10 warnings  penalty 8.0
+    Bundle Size: 11 warnings  penalty 7.7
     Dead Code: 1 warning  penalty 0.5
 
   Run svelte-doctor fix to auto-fix issues with an AI agent.
@@ -428,12 +473,12 @@ svelte-doctor v0.3.3
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
 [90m│[39m svelte     [90m│[39m 91             [90m│[39m 14104       [90m│[39m 70363        [90m│[39m 0            [90m│[39m 0 (0.00%)        [90m│[39m 0 (0.00%)         [90m│[39m
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
-[90m│[39m typescript [90m│[39m 106            [90m│[39m 7323        [90m│[39m 39792        [90m│[39m 30           [90m│[39m 435 (5.94%)      [90m│[39m 2618 (6.58%)      [90m│[39m
+[90m│[39m typescript [90m│[39m 106            [90m│[39m 7323        [90m│[39m 39788        [90m│[39m 30           [90m│[39m 435 (5.94%)      [90m│[39m 2618 (6.58%)      [90m│[39m
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
-[90m│[39m [1mTotal:[22m     [90m│[39m 373            [90m│[39m 49629       [90m│[39m 191309       [90m│[39m 62           [90m│[39m 1094 (2.20%)     [90m│[39m 6785 (3.55%)      [90m│[39m
+[90m│[39m [1mTotal:[22m     [90m│[39m 373            [90m│[39m 49629       [90m│[39m 191305       [90m│[39m 62           [90m│[39m 1094 (2.20%)     [90m│[39m 6785 (3.55%)      [90m│[39m
 [90m└────────────┴────────────────┴─────────────┴──────────────┴──────────────┴──────────────────┴───────────────────┘[39m
 [90mFound 62 clones.[39m
-[90mtime: 20.255ms[39m
+[90mtime: 22.124ms[39m
 
 [90m💡 Auto-refactor with AI: [1m[39mnpx skills add https://github.com/kucherenko/jscpd --skill dry-refactoring[90m[22m
 [90m🎩 New: Gangsta Agents — discipline your AI coding → gangsta.page[39m

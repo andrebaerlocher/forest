@@ -28,7 +28,7 @@ export interface TocRegistry {
 }
 
 export function createTocRegistry(): TocRegistry {
-  const items = $state<Registration[]>([]);
+  const items: Registration[] = [];
 
   return {
     get entries() {
