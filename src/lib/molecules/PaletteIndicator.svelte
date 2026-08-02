@@ -1,10 +1,10 @@
 <script lang="ts">
+  import type { HTMLButtonAttributes } from 'svelte/elements';
   import Kbd from '../atoms/Kbd.svelte';
 
-  interface Props {
+  interface Props extends HTMLButtonAttributes {
     onclick?: (event: MouseEvent) => void;
     class?: string;
-    [key: string]: any;
   }
 
   let { onclick, class: className = '', ...restProps }: Props = $props();

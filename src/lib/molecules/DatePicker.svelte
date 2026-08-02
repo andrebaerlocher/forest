@@ -1,5 +1,7 @@
 <script lang="ts">
-  interface Props {
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onchange'> {
     /** ISO date string, YYYY-MM-DD, or '' for empty */
     value?: string;
     placeholder?: string;
@@ -9,7 +11,6 @@
     locale?: string;
     onchange?: (value: string) => void;
     class?: string;
-    [key: string]: any;
   }
 
   let {

@@ -1,7 +1,8 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLTdAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLTdAttributes {
     type?: 'text' | 'numeric';
     active?: boolean;
     negative?: boolean;
@@ -13,7 +14,6 @@
     element?: HTMLTableCellElement | null;
     class?: string;
     children?: Snippet;
-    [key: string]: any;
   }
 
   let {

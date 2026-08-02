@@ -1,13 +1,13 @@
-<script lang="ts">
+<script lang="ts" generics="T = unknown">
   import type { Snippet } from 'svelte';
+  import type { HTMLSelectAttributes } from 'svelte/elements';
 
-  interface Props {
-    value?: any;
+  interface Props extends Omit<HTMLSelectAttributes, 'value'> {
+    value?: T;
     disabled?: boolean;
     invalid?: boolean;
     children?: Snippet;
     class?: string;
-    [key: string]: any;
   }
 
   let {

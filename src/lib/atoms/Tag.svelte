@@ -1,10 +1,10 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLSpanElement> {
     variant?: 'standard' | 'accent';
     children?: Snippet;
-    [key: string]: any;
   }
 
   let { variant = 'standard', children, ...restProps }: Props = $props();

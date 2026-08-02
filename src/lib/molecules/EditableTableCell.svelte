@@ -1,9 +1,10 @@
-<script lang="ts">
+<script lang="ts" generics="T = unknown">
   import type { Snippet } from 'svelte';
+  import type { HTMLTdAttributes } from 'svelte/elements';
   import TableCell from '../atoms/TableCell.svelte';
 
-  interface Props {
-    value: any; // Bindable!
+  interface Props extends HTMLTdAttributes {
+    value?: T; // Bindable!
     type?: 'text' | 'numeric';
     decimals?: number; // Decimals for numeric columns (e.g., 1 for kg, 2 for price)
     active?: boolean;
@@ -13,7 +14,6 @@
     class?: string;
     children?: Snippet;
     onclick?: (e: MouseEvent) => void;
-    [key: string]: any;
   }
 
   let {
@@ -34,7 +34,7 @@
   let localValue = $state('');
   let integerPart = $state('');
   let decimalPart = $state('');
-  let originalValue = $state<any>(null);
+  let originalValue = $state<T | null>(null);
   let seeded = $state(false); // edit began by typing a character into the cell
 
   let tdEl: HTMLTableCellElement | null = $state(null);
@@ -87,7 +87,7 @@
 
   function startEditing(seed?: string) {
     if (readonly) return;
-    originalValue = value;
+    originalValue = value ?? null;
     seeded = seed !== undefined;
     if (type === 'numeric') {
       const parts = splitValue(Number(value) || 0, decimals);
@@ -139,16 +139,18 @@
       }
       const combinedStr = `${intStr}.${decStr}`;
       const parsed = parseFloat(combinedStr);
-      value = Number.isNaN(parsed) ? 0 : parsed;
+      value = (Number.isNaN(parsed) ? 0 : parsed) as unknown as T;
     } else {
-      value = localValue;
+      value = localValue as unknown as T;
     }
     editing = false;
     tdEl?.focus();
   }
 
   function cancel() {
-    value = originalValue;
+    if (originalValue !== null) {
+      value = originalValue;
+    }
     editing = false;
     tdEl?.focus();
   }

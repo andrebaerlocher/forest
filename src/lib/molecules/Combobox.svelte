@@ -1,7 +1,8 @@
 <script lang="ts">
+  import type { HTMLAttributes } from 'svelte/elements';
   import type { ComboItem } from '../domain.js';
 
-  interface Props {
+  interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onchange'> {
     items?: ComboItem[];
     /** id of the selected item */
     value?: string | null;
@@ -12,7 +13,6 @@
     emptyText?: string;
     onchange?: (id: string | null, item: ComboItem | null) => void;
     class?: string;
-    [key: string]: any;
   }
 
   let {

@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLButtonAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLButtonAttributes {
     variant?: 'default' | 'active' | 'primary';
     disabled?: boolean;
     onclick?: (event: MouseEvent) => void;
     children?: Snippet;
-    [key: string]: any;
   }
 
   let {

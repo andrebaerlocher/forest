@@ -1,12 +1,12 @@
 <script lang="ts">
+  import type { HTMLAttributes } from 'svelte/elements';
   import { fade } from 'svelte/transition';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLDivElement> {
     /** Stacking level the scrim sits just below */
     level?: 'drawer' | 'palette' | 'toast';
     onclick?: () => void;
     class?: string;
-    [key: string]: any;
   }
 
   let { level = 'drawer', onclick, class: className = '', ...restProps }: Props = $props();

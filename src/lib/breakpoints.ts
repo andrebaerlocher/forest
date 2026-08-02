@@ -23,6 +23,10 @@ export const MQ = {
   shell: `(max-width: ${BP.shell}px)`,
   /** At or above it: desktop shell. Exact complement of MQ.shell. */
   shellUp: `(min-width: ${BP.shell + 1}px)`,
+  /** Below the split line: a secondary pane cannot sit beside a primary one. */
+  split: `(max-width: ${BP.split}px)`,
+  /** At or above it: two panes fit. Exact complement of MQ.split. */
+  splitUp: `(min-width: ${BP.split + 1}px)`,
   /** Finger, stylus or other imprecise pointer. */
   coarse: "(pointer: coarse)",
 } as const;

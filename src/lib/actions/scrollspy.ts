@@ -1,0 +1,97 @@
+export interface ScrollspyOptions {
+  /** Element ids to watch, in document order. */
+  ids: string[];
+  /** Called with the id of the section currently being read, or null. */
+  onchange: (activeId: string | null) => void;
+  /**
+   * Band of the viewport that counts as "being read". The default ignores the
+   * top tenth and the bottom seventy percent, so the active entry advances when
+   * a heading reaches the upper third rather than the instant it peeks in.
+   */
+  rootMargin?: string;
+}
+
+/**
+ * Tracks which anchored section the reader is currently in.
+ *
+ * Actions never run during SSR, so the table of contents renders with no active
+ * entry on the server and gains one on the first observer callback. That is the
+ * house rule from `breakpoints.svelte.ts` applied here: CSS owns the first
+ * frame's appearance, JS only refines it afterwards.
+ *
+ * Usage: <nav use:scrollspy={{ ids, onchange: (id) => (activeId = id) }}>
+ */
+export function scrollspy(node: HTMLElement, options: ScrollspyOptions) {
+  let { ids, onchange, rootMargin = "-10% 0px -70% 0px" } = options;
+  let observer: IntersectionObserver | null = null;
+  const visible = new Set<string>();
+
+  const doc = node.ownerDocument;
+
+  function elementsFor(list: string[]): HTMLElement[] {
+    return list.map((id) => doc.getElementById(id)).filter((el): el is HTMLElement => el !== null);
+  }
+
+  /**
+   * Nothing intersects when a section is taller than the band — mid-section, or
+   * at the very top or bottom of the document. Fall back to the last section
+   * whose top has already passed the band, which is the one being read.
+   */
+  function fallbackActive(): string | null {
+    let last: string | null = null;
+    const threshold = (doc.documentElement.clientHeight || 800) * 0.1;
+    for (const id of ids) {
+      const el = doc.getElementById(id);
+      if (el && el.getBoundingClientRect().top <= threshold) last = id;
+    }
+    return last;
+  }
+
+  function emit() {
+    // `ids` is in document order, so the first visible one is the topmost.
+    const active = ids.find((id) => visible.has(id)) ?? fallbackActive();
+    onchange(active);
+  }
+
+  function observe() {
+    observer?.disconnect();
+    visible.clear();
+
+    if (ids.length === 0) {
+      onchange(null);
+      return;
+    }
+
+    observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) visible.add(entry.target.id);
+          else visible.delete(entry.target.id);
+        }
+        emit();
+      },
+      { rootMargin },
+    );
+
+    for (const el of elementsFor(ids)) observer.observe(el);
+    emit();
+  }
+
+  observe();
+
+  return {
+    update(next: ScrollspyOptions) {
+      const changed =
+        next.ids.length !== ids.length ||
+        next.ids.some((id, i) => id !== ids[i]) ||
+        next.rootMargin !== rootMargin;
+
+      ({ ids, onchange, rootMargin = "-10% 0px -70% 0px" } = next);
+      if (changed) observe();
+    },
+    destroy() {
+      observer?.disconnect();
+      observer = null;
+    },
+  };
+}

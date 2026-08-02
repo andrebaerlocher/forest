@@ -1,14 +1,14 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLSpanElement> {
     status?: 'neutral' | 'success' | 'warning' | 'danger';
     label?: string;
     /** Hide the dot and set the label in status ink alone */
     bare?: boolean;
     class?: string;
     children?: Snippet;
-    [key: string]: any;
   }
 
   let {

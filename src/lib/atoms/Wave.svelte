@@ -1,8 +1,9 @@
 <script lang="ts">
-  interface Props {
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  interface Props extends HTMLAttributes<HTMLDivElement> {
     orientation?: 'vertical' | 'horizontal';
     class?: string;
-    [key: string]: any;
   }
 
   let { orientation = 'vertical', class: className = '', ...restProps }: Props = $props();

@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLTableElement> {
     activeCol?: string;
     headers?: Snippet;
     rows?: Snippet;
     summary?: Snippet;
-    [key: string]: any;
   }
 
   let {

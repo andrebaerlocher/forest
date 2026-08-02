@@ -1,5 +1,6 @@
-<script lang="ts">
+<script lang="ts" generics="Row extends object = Record<string, unknown>">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
   import Checkbox from '../atoms/Checkbox.svelte';
   import Select from '../atoms/Select.svelte';
   import TableCell from '../atoms/TableCell.svelte';
@@ -7,9 +8,9 @@
   import type { DataTableColumn as Column, DataTableSort as Sort } from '../domain.js';
   import EmptyState from '../molecules/EmptyState.svelte';
 
-  interface Props {
-    columns?: Column[];
-    rows?: Array<Record<string, any>>;
+  interface Props extends HTMLAttributes<HTMLDivElement> {
+    columns?: Column<Row>[];
+    rows?: Row[];
     /** Field used as the row identity. Must be unique. */
     rowKey?: string;
     sort?: Sort | null;
@@ -19,12 +20,11 @@
     emptyTitle?: string;
     emptyDescription?: string;
     stickyHeader?: boolean;
-    onrowclick?: (row: Record<string, any>) => void;
+    onrowclick?: (row: Row) => void;
     /** Per-cell render override; falls back to the raw value */
-    cell?: Snippet<[Record<string, any>, Column]>;
+    cell?: Snippet<[Row, Column<Row>]>;
     empty?: Snippet;
     class?: string;
-    [key: string]: any;
   }
 
   let {
@@ -68,6 +68,20 @@
       : 'Unsorted'
   );
 
+  function getRawValue(row: Row, col: Column<Row>): unknown {
+    return col.getValue ? col.getValue(row) : (row as Record<string, unknown>)[col.key];
+  }
+
+  function getCellValue(row: Row, col: Column<Row>): unknown {
+    const raw = getRawValue(row, col);
+    return col.format ? col.format(raw, row) : raw;
+  }
+
+  function getRowId(row: Row, index: number = 0): string | number {
+    const val = (row as Record<string, unknown>)[rowKey] ?? (row as Record<string, unknown>).id;
+    return (val !== undefined && val !== null) ? (val as string | number) : index;
+  }
+
   function onSortSelect(e: Event) {
     const v = (e.currentTarget as HTMLSelectElement).value;
     if (!v) {
@@ -81,14 +95,14 @@
   let allSelected = $derived(rows.length > 0 && selectedIds.length === rows.length);
 
   function toggleAll(checked: boolean) {
-    selectedIds = checked ? rows.map((r) => r[rowKey]) : [];
+    selectedIds = checked ? rows.map((r, i) => getRowId(r, i)) : [];
   }
 
   function toggleRow(id: string | number, checked: boolean) {
     selectedIds = checked ? [...selectedIds, id] : selectedIds.filter((s) => s !== id);
   }
 
-  function toggleSort(col: Column) {
+  function toggleSort(col: Column<Row>) {
     if (!col.sortable) return;
     if (sort?.key !== col.key) {
       sort = { key: col.key, dir: 'asc' };
@@ -99,7 +113,18 @@
     }
   }
 
-  function ariaSort(col: Column): 'ascending' | 'descending' | 'none' | undefined {
+  function handleRowKeyDown(e: KeyboardEvent, row: Row) {
+    if (!onrowclick) return;
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar') {
+      if (e.key === ' ' || e.key === 'Spacebar') {
+        e.preventDefault();
+      }
+      onrowclick(row);
+    }
+  }
+
+  function ariaSort(col: Column<Row>): 'ascending' | 'descending' | 'none' | undefined {
     if (!col.sortable) return undefined;
     if (sort?.key !== col.key) return 'none';
     return sort.dir === 'asc' ? 'ascending' : 'descending';
@@ -140,24 +165,24 @@
     drops list semantics from a ul with list-style: none, so VoiceOver stops
     announcing the item count. The role restores it. -->
     <ul class="card-list" role="list">
-      {#each rows as row (row[rowKey])}
-        <li class="row-card" class:selected-row={selectedIds.includes(row[rowKey])}>
+      {#each rows as row, index (getRowId(row, index))}
+        <li class="row-card" class:selected-row={selectedIds.includes(getRowId(row, index))}>
           <div class="card-head">
             {#if selectable}
               <Checkbox
-                checked={selectedIds.includes(row[rowKey])}
+                checked={selectedIds.includes(getRowId(row, index))}
                 onchange={(e: Event) =>
-                  toggleRow(row[rowKey], (e.currentTarget as HTMLInputElement).checked)}
-                aria-label="Select row"
+                  toggleRow(getRowId(row, index), (e.currentTarget as HTMLInputElement).checked)}
+                aria-label={`Select row ${getCellValue(row, leadColumn) ?? getRowId(row, index) ?? ''}`.trim()}
               />
             {/if}
             {#if onrowclick}
               <button type="button" class="card-title" onclick={() => onrowclick(row)}>
-                {#if cell}{@render cell(row, leadColumn)}{:else}{row[leadColumn.key]}{/if}
+                {#if cell}{@render cell(row, leadColumn)}{:else}{getCellValue(row, leadColumn)}{/if}
               </button>
             {:else}
               <span class="card-title-static">
-                {#if cell}{@render cell(row, leadColumn)}{:else}{row[leadColumn.key]}{/if}
+                {#if cell}{@render cell(row, leadColumn)}{:else}{getCellValue(row, leadColumn)}{/if}
               </span>
             {/if}
           </div>
@@ -168,9 +193,9 @@
               <dd
                 class="card-value"
                 class:num={col.type === 'numeric'}
-                class:neg={col.type === 'numeric' && Number(row[col.key]) < 0}
+                class:neg={col.type === 'numeric' && Number(getRawValue(row, col)) < 0}
               >
-                {#if cell}{@render cell(row, col)}{:else}{row[col.key]}{/if}
+                {#if cell}{@render cell(row, col)}{:else}{getCellValue(row, col)}{/if}
               </dd>
             {/each}
           </dl>
@@ -217,19 +242,21 @@
     </thead>
 
     <tbody>
-      {#each rows as row (row[rowKey])}
+      {#each rows as row, index (getRowId(row, index))}
         <tr
-          class:selected-row={selectedIds.includes(row[rowKey])}
+          class:selected-row={selectedIds.includes(getRowId(row, index))}
           class:clickable={!!onrowclick}
+          tabindex={onrowclick ? 0 : undefined}
           onclick={() => onrowclick?.(row)}
+          onkeydown={(e) => handleRowKeyDown(e, row)}
         >
           {#if selectable}
             <td class="select-col">
               <Checkbox
-                checked={selectedIds.includes(row[rowKey])}
+                checked={selectedIds.includes(getRowId(row, index))}
                 onchange={(e: Event) =>
-                  toggleRow(row[rowKey], (e.currentTarget as HTMLInputElement).checked)}
-                aria-label="Select row"
+                  toggleRow(getRowId(row, index), (e.currentTarget as HTMLInputElement).checked)}
+                aria-label={`Select row ${getCellValue(row, leadColumn) ?? getRowId(row, index) ?? ''}`.trim()}
               />
             </td>
           {/if}
@@ -237,12 +264,12 @@
             <TableCell
               type={col.type ?? 'text'}
               active={col.active}
-              negative={col.type === 'numeric' && Number(row[col.key]) < 0}
+              negative={col.type === 'numeric' && Number(getRawValue(row, col)) < 0}
             >
               {#if cell}
                 {@render cell(row, col)}
               {:else}
-                {row[col.key]}
+                {getCellValue(row, col)}
               {/if}
             </TableCell>
           {/each}
@@ -361,6 +388,11 @@
 
   tbody tr.clickable {
     cursor: pointer;
+  }
+
+  tbody tr.clickable:focus-visible {
+    outline: 1.5px solid var(--accent);
+    outline-offset: -1.5px;
   }
 
   /* Gated: a stuck hover reads as "selected" (.selected-row is the same

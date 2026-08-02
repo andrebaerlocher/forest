@@ -38,7 +38,7 @@ const checks = [
   },
   {
     name: 'Package Exports Linter (publint)',
-    cmd: 'npx publint',
+    cmd: 'npx publint --pack npm',
     desc: 'Checks packaging format compatibility'
   }
 ];

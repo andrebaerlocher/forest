@@ -1,14 +1,22 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLElement> {
     dragging?: boolean;
+    /** Drop the default 260px cap — for slips that fill a grid cell. */
+    fluid?: boolean;
     onclick?: (event: MouseEvent) => void;
     children?: Snippet;
-    [key: string]: any;
   }
 
-  let { dragging = false, onclick, children, ...restProps }: Props = $props();
+  let {
+    dragging = false,
+    fluid = false,
+    onclick,
+    children,
+    ...restProps
+  }: Props = $props();
 </script>
 
 {#if onclick}
@@ -16,6 +24,7 @@
     type="button"
     class="slip"
     class:dragging
+    class:fluid
     {onclick}
     {...restProps}
   >
@@ -27,6 +36,7 @@
   <div
     class="slip"
     class:dragging
+    class:fluid
     {...restProps}
   >
     {#if children}
@@ -48,6 +58,10 @@
       box-shadow var(--t-base) var(--ease),
       background var(--t-fast) var(--ease),
       border-color var(--t-fast) var(--ease);
+  }
+
+  .slip.fluid {
+    max-width: none;
   }
 
   button.slip {

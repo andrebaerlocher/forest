@@ -265,7 +265,7 @@
             {:else if col.key === "value"}
               {money(row.value)}
             {:else}
-              {row[col.key]}
+              {(row as Record<string, unknown>)[col.key]}
             {/if}
           {/snippet}
         </DataTable>

@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
   import EmbossedContours from '../atoms/EmbossedContours.svelte';
   import Spine from '../organisms/Spine.svelte';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLDivElement> {
     wordmark?: string;
     wordmarkSub?: string;
     links?: Array<{ href: string; label: string }>;
@@ -24,7 +25,6 @@
     /** Phone only: is the secondary panel drawer open? Bindable so Escape
      *  and the scrim inside Spine reach the app's header trigger. */
     panelOpen?: boolean;
-    [key: string]: any;
   }
 
   let {

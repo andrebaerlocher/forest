@@ -8,6 +8,12 @@
   interface Props {
     open: boolean;
     title?: string;
+    /**
+     * 'sm' is the confirm-dialog width this component was built for. 'lg' is for
+     * content that has to be read rather than acknowledged — an expanded system
+     * diagram, say — and lets its body scroll instead of overflowing the screen.
+     */
+    size?: 'sm' | 'lg';
     class?: string;
     onclose?: () => void;
     children?: Snippet;
@@ -17,6 +23,7 @@
   let {
     open = false,
     title = '',
+    size = 'sm',
     class: className = '',
     onclose,
     children,
@@ -43,7 +50,11 @@
     aria-modal="true"
     aria-label={title || 'Confirm dialog'}
   >
-    <div transition:scale={{ start: 0.96, duration: 180 }} class="dialog-scale-container">
+    <div
+      transition:scale={{ start: 0.96, duration: 180 }}
+      class="dialog-scale-container"
+      class:lg={size === 'lg'}
+    >
       <Slip class="dialog-slip {className}">
         {#if title}
           <h3 class="dialog-title">{title}</h3>
@@ -81,6 +92,14 @@
     max-width: 400px;
   }
 
+  /* Read-me-don't-acknowledge-me sizing: fill the space, cap at the viewport,
+     and let the body scroll rather than pushing the footer off-screen. */
+  .dialog-scale-container.lg {
+    max-width: min(1200px, 92vw);
+    max-height: min(900px, 90vh);
+    display: flex;
+  }
+
   :global(.dialog-slip) {
     background: var(--canvas) !important;
     box-shadow: var(--shadow-drag) !important; /* Dialog gets shadow since it is transient entering */
@@ -104,6 +123,21 @@
     color: var(--text-2);
     line-height: 1.6;
     margin-bottom: 24px;
+  }
+
+  /* Declared after the base rules they refine, so specificity climbs down the
+     stylesheet rather than up it. */
+  .dialog-scale-container.lg :global(.dialog-slip) {
+    max-height: min(900px, 90vh);
+    overflow: hidden;
+  }
+
+  .dialog-scale-container.lg .dialog-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--scroll-thumb) transparent;
   }
 
   .dialog-footer {

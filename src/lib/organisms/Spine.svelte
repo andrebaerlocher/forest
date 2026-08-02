@@ -1,12 +1,13 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
   import PaperTexture from '../atoms/PaperTexture.svelte';
   import { isPhone } from '../breakpoints.svelte.js';
   import HueControl from '../molecules/HueControl.svelte';
   import ModeToggle from '../molecules/ModeToggle.svelte';
   import Drawer from './Drawer.svelte';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLElement> {
     // Collapsible states
     collapsed?: boolean;
     hasSecondaryPanel?: boolean;
@@ -33,7 +34,6 @@
     mode?: 'light' | 'dark';
     hue?: number;
     extraControls?: Snippet;
-    [key: string]: any;
   }
 
   let {

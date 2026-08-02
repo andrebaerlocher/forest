@@ -1,9 +1,10 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLAttributes } from 'svelte/elements';
   import { fly } from 'svelte/transition';
   import PaperTexture from '../atoms/PaperTexture.svelte';
 
-  interface Props {
+  interface Props extends HTMLAttributes<HTMLDivElement> {
     message?: string;
     open: boolean;
     status?: 'neutral' | 'success' | 'warning' | 'danger';
@@ -15,7 +16,6 @@
     class?: string;
     onclose?: () => void;
     children?: Snippet;
-    [key: string]: any;
   }
 
   let {

@@ -1,5 +1,7 @@
 <script lang="ts">
-  interface Props {
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  interface Props extends HTMLAttributes<HTMLInputElement> {
     value?: string | number;
     placeholder?: string;
     type?: string;
@@ -7,7 +9,6 @@
     invalid?: boolean;
     isNumeric?: boolean;
     class?: string;
-    [key: string]: any;
   }
 
   let {

@@ -1,12 +1,13 @@
 <script lang="ts">
-  interface Props {
+  import type { HTMLTextareaAttributes } from 'svelte/elements';
+
+  interface Props extends HTMLTextareaAttributes {
     value?: string;
     placeholder?: string;
     disabled?: boolean;
     invalid?: boolean;
     rows?: number;
     class?: string;
-    [key: string]: any;
   }
 
   let {

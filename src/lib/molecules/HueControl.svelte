@@ -1,7 +1,8 @@
 <script lang="ts">
-  interface Props {
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  interface Props extends HTMLAttributes<HTMLDivElement> {
     hue?: number;
-    [key: string]: any;
   }
 
   let { hue = $bindable(282), ...restProps }: Props = $props();

@@ -1,12 +1,12 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
+  import type { HTMLInputAttributes } from 'svelte/elements';
 
-  interface Props {
+  interface Props extends HTMLInputAttributes {
     checked?: boolean;
     disabled?: boolean;
     id?: string;
     children?: Snippet;
-    [key: string]: any;
   }
 
   let {

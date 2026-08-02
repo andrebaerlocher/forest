@@ -40,8 +40,37 @@ export interface Command {
   group?: string;
 }
 
-/** A DataTable column definition. */
-export interface DataTableColumn {
+/** An entry for Menu. */
+export interface MenuItemData {
+  id: string;
+  label: string;
+  /** Renders as a non-focusable separator; `label` is ignored. */
+  separator?: boolean;
+  disabled?: boolean;
+  shortcut?: string;
+  danger?: boolean;
+}
+
+/** A stage in a Stepper flow. */
+export interface StepItem {
+  id: string;
+  label: string;
+  /** Secondary line under the label. */
+  detail?: string;
+}
+
+/**
+ * A DataTable column definition.
+ *
+ * `Row extends object`, not `Record<string, unknown>` — the latter requires an
+ * index signature, which a plain `interface Row { id: string }` does not
+ * structurally have. Constraining to `object` lets ordinary interfaces satisfy
+ * `Row` without the caller adding an index signature just to appease the
+ * generic. Internal lookups (`row[col.key]`) still go through an explicit
+ * `Record<string, unknown>` cast, since `col.key: string` isn't statically
+ * known to be `keyof Row`.
+ */
+export interface DataTableColumn<Row extends object = Record<string, unknown>> {
   key: string;
   label: string;
   type?: "text" | "numeric";
@@ -58,6 +87,10 @@ export interface DataTableColumn {
    * is invalid.
    */
   primary?: boolean;
+  /** Optional custom value getter for computed or nested fields (e.g. row.user.name) */
+  getValue?: (row: Row) => unknown;
+  /** Optional value formatter function */
+  format?: (value: unknown, row: Row) => string;
 }
 
 /** DataTable sort state. Third click on a header clears it to null. */
@@ -68,3 +101,92 @@ export interface DataTableSort {
 
 /** Status ink shared by StatusPill, Toast and the toaster. */
 export type Status = "neutral" | "success" | "warning" | "danger";
+
+/* ── Case study content model ───────────────────────────────────────────────
+ *
+ * Long-form case studies are authored as markup in the consuming app, not as a
+ * data blob rendered by a template. So these types cover only the *structural
+ * and quantitative* facts a component needs to lay out — metrics, benchmarks,
+ * decisions, outlines. Prose, diagrams and code walkthroughs stay markup, which
+ * is why there is no ProseBlock, RichText or DiagramSpec here.
+ */
+
+/** One number in a metrics strip. */
+export interface MetricItem {
+  label: string;
+  value: string;
+  detail?: string;
+}
+
+/** A table-of-contents entry, registered by an anchored section or passed in. */
+export interface TocEntry {
+  id: string;
+  label: string;
+  /** Heading level, used for the indent depth in the rendered outline. */
+  level: number;
+}
+
+/** One row of a latency or throughput breakdown. */
+export interface BenchmarkRow {
+  label: string;
+  value: number;
+  /** Overrides the table's shared unit for this row. */
+  unit?: string;
+  detail?: string;
+  /** Pre-formatted display value, when `value` alone reads badly. */
+  formatted?: string;
+}
+
+/**
+ * One row of an evaluation table — deliberately open, since the metric columns
+ * differ per study (κ and α for agreement, QWK for scoring, and so on). Kept
+ * here to document the shape DataTable expects for this use.
+ */
+export interface EvalMetricRow {
+  [column: string]: string | number;
+}
+
+/** One grouped entry in a stack manifest. */
+export interface TechStackGroup {
+  category: string;
+  items: string[];
+  /** A hard constraint this group had to meet, e.g. "p99 < 200µs". */
+  constraint?: string;
+}
+
+/**
+ * One file in a code walkthrough.
+ *
+ * Note there is no `html` field: highlighted output is passed to CodeBlock as a
+ * snippet, so no raw markup ever travels through this data shape.
+ */
+export interface CodeFile {
+  id: string;
+  filename: string;
+  language?: string;
+  /** Raw source, rendered as plain escaped text. */
+  code?: string;
+  lineNumbers?: boolean;
+  highlightLines?: number[];
+  startLine?: number;
+}
+
+/** An option weighed and rejected in a decision record. */
+export interface RejectedAlternative {
+  option: string;
+  rejectedBecause: string;
+}
+
+/** Lifecycle of an architecture decision record. */
+export type DecisionStatus = "proposed" | "accepted" | "superseded" | "deprecated";
+
+/** One card in a case study index. */
+export interface CaseStudySummaryData {
+  slug: string;
+  href: string;
+  title: string;
+  standfirst: string;
+  tags: string[];
+  /** A single headline number — the index stays restrained on purpose. */
+  metric?: MetricItem;
+}

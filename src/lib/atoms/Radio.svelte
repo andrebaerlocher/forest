@@ -1,14 +1,14 @@
-<script lang="ts">
+<script lang="ts" generics="T = unknown">
   import type { Snippet } from 'svelte';
+  import type { HTMLInputAttributes } from 'svelte/elements';
 
-  interface Props {
-    group: any;
-    value: any;
+  interface Props extends Omit<HTMLInputAttributes, 'group' | 'value'> {
+    group?: T;
+    value?: T;
     name?: string;
     disabled?: boolean;
     id?: string;
     children?: Snippet;
-    [key: string]: any;
   }
 
   let {

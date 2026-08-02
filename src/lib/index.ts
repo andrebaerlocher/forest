@@ -1,6 +1,12 @@
 // Reexport your entry components here
+
+export type { AnchoredOptions, AnchoredPlacement } from "./actions/anchored.js";
+export { anchored } from "./actions/anchored.js";
 export { focusTrap } from "./actions/focusTrap.js";
+export type { ScrollspyOptions } from "./actions/scrollspy.js";
+export { scrollspy } from "./actions/scrollspy.js";
 export { default as Avatar } from "./atoms/Avatar.svelte";
+export { default as BarMeter } from "./atoms/BarMeter.svelte";
 export { default as Button } from "./atoms/Button.svelte";
 export { default as Checkbox } from "./atoms/Checkbox.svelte";
 export { default as Divider } from "./atoms/Divider.svelte";
@@ -14,6 +20,9 @@ export { default as Radio } from "./atoms/Radio.svelte";
 export { default as Scrim } from "./atoms/Scrim.svelte";
 export { default as SealButton } from "./atoms/SealButton.svelte";
 export { default as Select } from "./atoms/Select.svelte";
+export { default as Skeleton } from "./atoms/Skeleton.svelte";
+export { default as Slider } from "./atoms/Slider.svelte";
+export { default as Sparkline } from "./atoms/Sparkline.svelte";
 export { default as Switch } from "./atoms/Switch.svelte";
 export { default as TableCell } from "./atoms/TableCell.svelte";
 export { default as Tag } from "./atoms/Tag.svelte";
@@ -21,8 +30,35 @@ export { default as Textarea } from "./atoms/Textarea.svelte";
 export { default as Wave } from "./atoms/Wave.svelte";
 export { BP, MQ } from "./breakpoints.js";
 export { isCoarsePointer, isPhone, mediaQuery } from "./breakpoints.svelte.js";
+export type { TocRegistry } from "./caseStudyToc.svelte.js";
+export {
+  createTocRegistry,
+  provideTocRegistry,
+  useTocRegistry,
+} from "./caseStudyToc.svelte.js";
+export type {
+  D2ThemeOptions,
+  ForestThemeColors,
+  MermaidThemeOptions,
+} from "./diagrams.js";
+export {
+  getForestD2Theme,
+  getForestMermaidTheme,
+  getForestThemeColors,
+  oklchToHex,
+} from "./diagrams.js";
+export type { HeadingLevel } from "./headingLevel.js";
+export {
+  clampHeadingLevel,
+  provideHeadingLevel,
+  useHeadingLevel,
+} from "./headingLevel.js";
+export { default as Accordion } from "./molecules/Accordion.svelte";
 export { default as ActivityItem } from "./molecules/ActivityItem.svelte";
+export { default as Alert } from "./molecules/Alert.svelte";
 export { default as Breadcrumb } from "./molecules/Breadcrumb.svelte";
+export { default as Callout } from "./molecules/Callout.svelte";
+export { default as CaseStudyCard } from "./molecules/CaseStudyCard.svelte";
 export { default as Combobox } from "./molecules/Combobox.svelte";
 export { default as DatePicker } from "./molecules/DatePicker.svelte";
 export { default as DropdownMenu } from "./molecules/DropdownMenu.svelte";
@@ -32,32 +68,52 @@ export { default as FieldRow } from "./molecules/FieldRow.svelte";
 export { default as FormField } from "./molecules/FormField.svelte";
 export { default as HueControl } from "./molecules/HueControl.svelte";
 export { default as ListRow } from "./molecules/ListRow.svelte";
+export { default as MetricGrid } from "./molecules/MetricGrid.svelte";
 export { default as ModeToggle } from "./molecules/ModeToggle.svelte";
 export { default as Pagination } from "./molecules/Pagination.svelte";
 export { default as PaletteIndicator } from "./molecules/PaletteIndicator.svelte";
+export { default as PullQuote } from "./molecules/PullQuote.svelte";
 export { default as SegmentedControl } from "./molecules/SegmentedControl.svelte";
 export { default as Slip } from "./molecules/Slip.svelte";
+export { default as StackManifest } from "./molecules/StackManifest.svelte";
+export { default as Standfirst } from "./molecules/Standfirst.svelte";
 export { default as Stat } from "./molecules/Stat.svelte";
 export { default as StatusPill } from "./molecules/StatusPill.svelte";
 export { default as Tabs } from "./molecules/Tabs.svelte";
+export { default as TagInput } from "./molecules/TagInput.svelte";
 export { default as Toast } from "./molecules/Toast.svelte";
 export { default as Tooltip } from "./molecules/Tooltip.svelte";
 export { default as AppHeader } from "./organisms/AppHeader.svelte";
+export { default as BenchmarkTable } from "./organisms/BenchmarkTable.svelte";
+export { default as CodeBlock } from "./organisms/CodeBlock.svelte";
+export { default as CodeBlockGroup } from "./organisms/CodeBlockGroup.svelte";
 export { default as CommandPalette } from "./organisms/CommandPalette.svelte";
 export { default as ContextualStrip } from "./organisms/ContextualStrip.svelte";
 export { default as DataTable } from "./organisms/DataTable.svelte";
+export { default as DecisionRecord } from "./organisms/DecisionRecord.svelte";
+export { default as DeepDive } from "./organisms/DeepDive.svelte";
 export { default as DetailPanel } from "./organisms/DetailPanel.svelte";
 export { default as Dialog } from "./organisms/Dialog.svelte";
 export { default as Drawer } from "./organisms/Drawer.svelte";
+export { default as Figure } from "./organisms/Figure.svelte";
 export { default as FormSection } from "./organisms/FormSection.svelte";
 export { default as KanbanColumn } from "./organisms/KanbanColumn.svelte";
 export { default as LedgerTable } from "./organisms/LedgerTable.svelte";
+export { default as Menu } from "./organisms/Menu.svelte";
+export { default as Popover } from "./organisms/Popover.svelte";
+export { default as Section } from "./organisms/Section.svelte";
 export { default as Spine } from "./organisms/Spine.svelte";
+export { default as SplitPane } from "./organisms/SplitPane.svelte";
 export { default as StatusBar } from "./organisms/StatusBar.svelte";
+export { default as Stepper } from "./organisms/Stepper.svelte";
+export { default as TableOfContents } from "./organisms/TableOfContents.svelte";
 export { default as Timeline } from "./organisms/Timeline.svelte";
 export { default as ToastRegion } from "./organisms/ToastRegion.svelte";
+export { default as TreeView } from "./organisms/TreeView.svelte";
 export { createToaster, toaster } from "./stores/toaster.svelte.js";
 export { default as AppShell } from "./templates/AppShell.svelte";
+export { default as CaseStudyIndex } from "./templates/CaseStudyIndex.svelte";
+export { default as CaseStudyShell } from "./templates/CaseStudyShell.svelte";
 export { default as DashboardTemplate } from "./templates/DashboardTemplate.svelte";
 export { default as ListDetailTemplate } from "./templates/ListDetailTemplate.svelte";
 export { default as SettingsTemplate } from "./templates/SettingsTemplate.svelte";

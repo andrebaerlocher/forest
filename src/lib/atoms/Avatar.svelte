@@ -1,12 +1,13 @@
 <script lang="ts">
-  interface Props {
+  import type { HTMLAttributes } from 'svelte/elements';
+
+  interface Props extends HTMLAttributes<HTMLSpanElement> {
     name: string;
     src?: string;
     size?: 'sm' | 'md' | 'lg';
     /** Draw the seal ring. Off gives a bare initials disc. */
     ring?: boolean;
     class?: string;
-    [key: string]: any;
   }
 
   let {
