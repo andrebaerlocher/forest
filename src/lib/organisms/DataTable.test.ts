@@ -180,4 +180,31 @@ describe("DataTable component tests", () => {
 
     unmount(instance);
   });
+
+  it("activates threshold virtualization for large row sets and renders virtual spacers", async () => {
+    const largeRows = Array.from({ length: 100 }, (_, i) => ({
+      id: `${i + 1}`,
+      name: `User ${i + 1}`,
+      role: i % 2 === 0 ? "Engineer" : "Designer",
+    }));
+
+    const instance = await mountComponent("src/lib/organisms/DataTable.svelte", {
+      target: container,
+      props: {
+        columns,
+        rows: largeRows,
+        rowKey: "id",
+        threshold: 50,
+      },
+    });
+
+    const bodyRows = container.querySelectorAll("tbody tr");
+    // Visible rows should be sliced (overscan buffer ~15 rows) rather than all 100 rows
+    expect(bodyRows.length).toBeLessThan(100);
+
+    const virtualSpacer = container.querySelector("tr.virtual-spacer, li.virtual-spacer");
+    expect(virtualSpacer).not.toBeNull();
+
+    unmount(instance);
+  });
 });

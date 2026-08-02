@@ -1,70 +1,29 @@
 # Forest Diagnostics Report
 
-Generated on: 2026-08-02T05:28:18.878Z
+Generated on: 2026-08-02T08:51:35.221Z
 
 | Check | Command | Status | Description |
 |---|---|---|---|
-| Biome Linter & Formatter | `npx @biomejs/biome check src` | ❌ FAIL | Checks linting rules and code formatting |
-| Svelte Check Native | `npx svelte-check-native --workspace .` | ❌ FAIL | High-performance Rust-based type checker |
+| Biome Linter & Formatter | `npx @biomejs/biome check src` | ✅ PASS | Checks linting rules and code formatting |
+| Svelte Check Native | `npx svelte-check-native --workspace .` | ✅ PASS | High-performance Rust-based type checker |
 | Svelte Doctor | `npx svelte-doctor check` | ✅ PASS | Checks for security, dead code, and Svelte 5 patterns |
 | Copy-Paste Detector (jscpd) | `npx jscpd src/lib` | ✅ PASS | Checks for duplicate blocks of code |
 | Package Exports Linter (publint) | `npx publint --pack npm` | ✅ PASS | Checks packaging format compatibility |
 
 ## Details
 
-### Biome Linter & Formatter (❌ FAIL)
+### Biome Linter & Formatter (✅ PASS)
 
 ```text
-Checked 207 files in 246ms. No fixes applied.
-Found 1 error.
+Checked 209 files in 166ms. No fixes applied.
 Found 6 warnings.
 ```
 
-### Svelte Check Native (❌ FAIL)
+### Svelte Check Native (✅ PASS)
 
 ```text
 Loading svelte-check in workspace: /Users/andrebarlocher/Documents/Svelte/Forest
 Getting Svelte diagnostics...
-
-/Users/andrebarlocher/Documents/Svelte/Forest/src/lib/test_harness/GenericsAdversarialHarness.svelte:19:30
-Error: Type 'AdversarialRow' does not satisfy the constraint 'Record<string, unknown>'. (js)
-18 | 
-19 |   const tableColumns: Column<AdversarialRow>[] = [
-                                  ^^^^^^^^^^^^^^
-20 |     { key: 'code', label: 'Item Code', primary: true, sortable: true },
-
-
-/Users/andrebarlocher/Documents/Svelte/Forest/src/lib/test_harness/GenericsAdversarialHarness.svelte:136:3
-Error: Type 'DataTableColumn<AdversarialRow>[]' is not assignable to type 'DataTableColumn<Record<string, unknown>>[]'. (js)
-135 | <DataTable
-136 |   columns={tableColumns}
-        ^
-137 |   rows={tableRows}
-
-
-/Users/andrebarlocher/Documents/Svelte/Forest/src/lib/test_harness/GenericsAdversarialHarness.svelte:137:3
-Error: Type 'AdversarialRow[]' is not assignable to type 'Record<string, unknown>[]'. (js)
-136 |   columns={tableColumns}
-137 |   rows={tableRows}
-        ^
-138 |   rowKey="id"
-
-
-/Users/andrebarlocher/Documents/Svelte/Forest/src/lib/test_harness/GenericsAdversarialHarness.svelte:142:3
-Error: Type '(row: AdversarialRow) => void' is not assignable to type '(row: Record<string, unknown>) => void'. (js)
-141 |   selectable={true}
-142 |   onrowclick={handleRowClick}
-        ^
-143 | >
-
-
-/Users/andrebarlocher/Documents/Svelte/Forest/src/lib/test_harness/GenericsAdversarialHarness.svelte:146:48
-Error: 'row.metadata' is of type 'unknown'. (js)
-145 |     {#if col.key === 'code'}
-146 |       <strong class="custom-code">{row.code} ({row.metadata.category})</strong>
-                                                     ^^^^^^^^^^^^
-147 |     {:else if col.key === 'status'}
-
 
 /Users/andrebarlocher/Documents/Svelte/Forest/src/lib/organisms/SplitPane.svelte:138:3
 Warn: Non-interactive element `<div>` should not be assigned mouse or keyboard event listeners
@@ -85,7 +44,7 @@ https://svelte.dev/e/state_referenced_locally (svelte)
 
 
 ====================================
-svelte-check-native found 5 errors and 2 warnings in 3 files
+svelte-check-native found 0 errors and 2 warnings in 2 files
 ```
 
 ### Svelte Doctor (✅ PASS)
@@ -97,17 +56,17 @@ svelte-doctor v0.3.3
 
   ⚠ Repeated allocation inside `$derived()` can churn memory and recomputation cost (24)
     Avoid allocating new arrays or objects in heavy `$derived()` blocks unless the allocation is required and bounded.
-    src/lib/atoms/Avatar.svelte:22
-    src/lib/atoms/Skeleton.svelte:32
-    src/lib/atoms/Sparkline.svelte:22
+    src/lib/atoms/Avatar.svelte:23
+    src/lib/atoms/Skeleton.svelte:33
+    src/lib/atoms/Sparkline.svelte:23
     src/lib/molecules/Combobox.svelte:40
-    src/lib/molecules/DatePicker.svelte:51,56,65
+    src/lib/molecules/DatePicker.svelte:52,57,66
     src/lib/molecules/TagInput.svelte:46
     src/lib/organisms/BenchmarkTable.svelte:26
     src/lib/organisms/CodeBlock.svelte:56
     src/lib/organisms/CodeBlockGroup.svelte:21
     src/lib/organisms/CommandPalette.svelte:34
-    src/lib/organisms/DataTable.svelte:59,60
+    src/lib/organisms/DataTable.svelte:102,103
     src/lib/organisms/Menu.svelte:37
     src/lib/organisms/TableOfContents.svelte:33
     src/lib/templates/CaseStudyShell.svelte:50
@@ -117,16 +76,16 @@ svelte-doctor v0.3.3
 
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`display` reads no reactive state)
     Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
-    src/lib/atoms/BarMeter.svelte:24
+    src/lib/atoms/BarMeter.svelte:25
 
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`inputId` reads no reactive state) (2)
     Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
-    src/lib/atoms/Slider.svelte:39
+    src/lib/atoms/Slider.svelte:40
     src/lib/molecules/TagInput.svelte:43
 
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`labelId` reads no reactive state)
     Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
-    src/lib/atoms/Slider.svelte:40
+    src/lib/atoms/Slider.svelte:41
 
   ⚠ CSS uses `!important` override (21)
     Remove `!important` and fix cascade ownership so styles remain predictable.
@@ -138,17 +97,17 @@ svelte-doctor v0.3.3
     src/lib/templates/EditorView.svelte:313,314
     src/lib/templates/SpreadsheetView.svelte:384,385,492,499,521,522,541,605
 
-  ⚠ Inline event handler allocates a new function reference (80)
+  ⚠ Inline event handler allocates a new function reference (78)
     Pass a stable handler reference like `onclick={handleClick}` when no inline closure is required.
     src/lib/molecules/Accordion.svelte:84,85
     src/lib/molecules/Combobox.svelte:134,161,162,163
-    src/lib/molecules/DatePicker.svelte:115,116,127,131,147
+    src/lib/molecules/DatePicker.svelte:116,117,128,132,148
     src/lib/molecules/SegmentedControl.svelte:32
     src/lib/molecules/Tabs.svelte:34
     src/lib/molecules/TagInput.svelte:131,150,168,169,170
     src/lib/molecules/Tooltip.svelte:49,51
     src/lib/organisms/CommandPalette.svelte:115,116
-    src/lib/organisms/DataTable.svelte:143,174,180,214,228,250,251,257
+    src/lib/organisms/DataTable.svelte:186,220,226,263,277,304,305,311
     src/lib/organisms/Figure.svelte:63,95
     src/lib/organisms/Menu.svelte:161,164,165
     src/lib/organisms/Spine.svelte:136
@@ -160,7 +119,6 @@ svelte-doctor v0.3.3
     src/lib/templates/CrmView.svelte:138,149,165,185,200,205,217,255
     src/lib/templates/EditorView.svelte:86,95,106,122,143,161,166,178,264
     src/lib/templates/SpreadsheetView.svelte:83,92,103,119,138,145,157,194,250,262,276,287,335
-    src/lib/test_harness/GenericsAdversarialHarness.svelte:159,160
     src/routes/+page.svelte:107
 
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`role` reads no reactive state)
@@ -169,7 +127,7 @@ svelte-doctor v0.3.3
 
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`resolvedLevel` reads no reactive state) (2)
     Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
-    src/lib/molecules/CaseStudyCard.svelte:31
+    src/lib/molecules/CaseStudyCard.svelte:39
     src/lib/organisms/Section.svelte:36
 
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`showDivider` reads no reactive state)
@@ -184,15 +142,19 @@ svelte-doctor v0.3.3
     Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
     src/lib/organisms/CodeBlock.svelte:48
 
-  ⚠ Component has 465 meaningful lines (limit: 300). Consider breaking it into smaller components.
+  ⚠ Component has 514 meaningful lines (limit: 300). Consider breaking it into smaller components.
     Large components are harder to maintain and test. Extract logical sections into child components or shared utilities.
     src/lib/organisms/DataTable.svelte:1
 
   ⚠ Block nesting depth is 4 (max: 3). (3)
     Extract nested sections into separate components to improve readability.
-    src/lib/organisms/DataTable.svelte:152
+    src/lib/organisms/DataTable.svelte:195
     src/lib/organisms/Menu.svelte:174
     src/lib/organisms/TreeView.svelte:288
+
+  ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`paddingTop` reads no reactive state)
+    Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
+    src/lib/organisms/DataTable.svelte:80
 
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`headingId` reads no reactive state)
     Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
@@ -205,10 +167,6 @@ svelte-doctor v0.3.3
   ⚠ `$derived()` expression references no reactive state — should be a plain `const` (`resolvedZoomable` reads no reactive state)
     Replace `const x = $derived(value)` with `const x = value`, or ensure at least one dependency reads a $state variable.
     src/lib/organisms/Figure.svelte:32
-
-  ⚠ {#each} block is missing a key expression
-    Add a key expression like `{#each items as item (item.id)}` so Svelte can efficiently diff list updates instead of re-creating DOM nodes.
-    src/lib/organisms/SelectTestWrapper.svelte:25
 
   ⚠ Component has 416 meaningful lines (limit: 300). Consider breaking it into smaller components.
     Large components are harder to maintain and test. Extract logical sections into child components or shared utilities.
@@ -248,7 +206,7 @@ svelte-doctor v0.3.3
 
   ⚠ Unused export: getCompiledBlobUrl
     Remove the export or add it to a public API surface if it is intentional
-    src/lib/test-component-loader.ts
+    src/test-support/test-component-loader.ts
 
 
   ┌─────────────────────────────────────────────────┐
@@ -258,14 +216,14 @@ svelte-doctor v0.3.3
   │                                                 │
   │  ██████░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░░       │
   │                                                 │
-  │  ⚠ 153 warnings  41/350 files  1 fixable  1.3s  │
+  │  ⚠ 151 warnings  39/352 files  1 fixable  1.2s  │
   └─────────────────────────────────────────────────┘
   Ignore suggestions: 0 diagnostics can likely be ignored.
   Potential bundle savings: 0KB.
 
   Category breakdown:
-    Performance: 128 warnings  penalty 128.0
-    State & Reactivity: 14 warnings  penalty 16.8
+    Performance: 125 warnings  penalty 125.0
+    State & Reactivity: 15 warnings  penalty 18.0
     Architecture: 10 warnings  penalty 8.0
     Dead Code: 1 warning  penalty 0.5
 
@@ -312,26 +270,26 @@ svelte-doctor v0.3.3
  - [1m[32matoms/Checkbox.svelte:css[39m[22m [97:9 - 106:4] (10 lines, 150 tokens)
    atoms/Radio.svelte:css [101:9 - 110:4]
 [1mClone found (typescript)[22m
- - [1m[32matoms/Checkbox.svelte:typescript[39m[22m [2:3 - 15:9] (14 lines, 55 tokens)
+ - [1m[32matoms/Checkbox.svelte:typescript[39m[22m [2:3 - 15:9] (14 lines, 57 tokens)
    atoms/Switch.svelte:typescript [2:3 - 15:9]
 [1mClone found (css)[22m
- - [1m[32matoms/Input.svelte:css[39m[22m [37:10 - 47:44] (11 lines, 119 tokens)
-   atoms/Textarea.svelte:css [34:13 - 44:44]
+ - [1m[32matoms/Input.svelte:css[39m[22m [38:10 - 48:44] (11 lines, 119 tokens)
+   atoms/Textarea.svelte:css [35:13 - 45:44]
 [1mClone found (css)[22m
- - [1m[32matoms/Input.svelte:css[39m[22m [38:5 - 44:34] (7 lines, 79 tokens)
+ - [1m[32matoms/Input.svelte:css[39m[22m [39:5 - 45:34] (7 lines, 79 tokens)
    atoms/Select.svelte:css [51:5 - 57:34]
 [1mClone found (css)[22m
- - [1m[32matoms/Input.svelte:css[39m[22m [38:34 - 46:45] (9 lines, 89 tokens)
-   molecules/DatePicker.svelte:css [171:39 - 178:55]
+ - [1m[32matoms/Input.svelte:css[39m[22m [39:34 - 47:45] (9 lines, 89 tokens)
+   molecules/DatePicker.svelte:css [172:39 - 179:55]
 [1mClone found (css)[22m
- - [1m[32matoms/Input.svelte:css[39m[22m [44:14 - 49:4] (6 lines, 54 tokens)
+ - [1m[32matoms/Input.svelte:css[39m[22m [45:14 - 50:4] (6 lines, 54 tokens)
    atoms/Select.svelte:css [57:40 - 62:11]
 [1mClone found (css)[22m
  - [1m[32matoms/Select.svelte:css[39m[22m [50:21 - 57:34] (8 lines, 80 tokens)
    molecules/Combobox.svelte:css [193:16 - 200:34]
 [1mClone found (css)[22m
- - [1m[32matoms/Slider.svelte:css[39m[22m [146:5 - 155:23] (10 lines, 88 tokens)
-   atoms/Slider.svelte:css [156:5 - 165:23]
+ - [1m[32matoms/Slider.svelte:css[39m[22m [147:5 - 156:23] (10 lines, 88 tokens)
+   atoms/Slider.svelte:css [157:5 - 166:23]
 [1mClone found (typescript)[22m
  - [1m[32matoms/Slider.test.ts[39m[22m [1:1 - 31:10] (31 lines, 230 tokens)
    molecules/DropdownMenu.test.ts [1:1 - 31:10]
@@ -359,9 +317,6 @@ svelte-doctor v0.3.3
 [1mClone found (typescript)[22m
  - [1m[32matoms/Slider.test.ts[39m[22m [31:34 - 45:6] (15 lines, 65 tokens)
    organisms/TreeView.test.ts [21:65 - 35:6]
-[1mClone found (typescript)[22m
- - [1m[32mbreakpoints.test.ts[39m[22m [15:1 - 27:4] (13 lines, 87 tokens)
-   test-component-loader.ts [99:5 - 111:8]
 [1mClone found (typescript)[22m
  - [1m[32mbreakpoints.test.ts[39m[22m [21:3 - 32:6] (12 lines, 85 tokens)
    stores/toaster.test.ts [17:24 - 27:6]
@@ -408,17 +363,11 @@ svelte-doctor v0.3.3
  - [1m[32morganisms/CodeBlock.svelte:css[39m[22m [159:20 - 167:9] (9 lines, 65 tokens)
    organisms/DeepDive.svelte:css [165:26 - 173:9]
 [1mClone found (html)[22m
- - [1m[32morganisms/DataTable.svelte:html[39m[22m [172:15 - 177:17] (6 lines, 83 tokens)
-   organisms/DataTable.svelte:html [255:15 - 260:17]
+ - [1m[32morganisms/DataTable.svelte:html[39m[22m [218:15 - 223:17] (6 lines, 89 tokens)
+   organisms/DataTable.svelte:html [309:15 - 314:17]
 [1mClone found (typescript)[22m
  - [1m[32morganisms/DataTable.test.ts[39m[22m [5:54 - 103:10] (99 lines, 679 tokens)
    organisms/SplitPane.test.ts [5:58 - 103:10]
-[1mClone found (typescript)[22m
- - [1m[32morganisms/DataTable.test.ts[39m[22m [17:1 - 31:6] (15 lines, 106 tokens)
-   test-component-loader.ts [17:8 - 31:6]
-[1mClone found (typescript)[22m
- - [1m[32morganisms/DataTable.test.ts[39m[22m [71:5 - 88:8] (18 lines, 80 tokens)
-   test-component-loader.ts [105:37 - 122:8]
 [1mClone found (css)[22m
  - [1m[32morganisms/DeepDive.svelte:css[39m[22m [164:24 - 170:4] (7 lines, 61 tokens)
    organisms/TableOfContents.svelte:css [114:24 - 120:4]
@@ -470,24 +419,21 @@ svelte-doctor v0.3.3
 [1mClone found (typescript)[22m
  - [1m[32mtemplates/EditorView.svelte:typescript[39m[22m [6:54 - 23:26] (18 lines, 73 tokens)
    templates/SpreadsheetView.svelte:typescript [6:48 - 23:26]
-[1mClone found (typescript)[22m
- - [1m[32mtest-component-loader.ts[39m[22m [53:78 - 61:10] (9 lines, 50 tokens)
-   test-component-loader.ts [74:14 - 82:10]
 [90m┌────────────┬────────────────┬─────────────┬──────────────┬──────────────┬──────────────────┬───────────────────┐[39m
 [90m│[39m[31m Format     [39m[90m│[39m[31m Files analyzed [39m[90m│[39m[31m Total lines [39m[90m│[39m[31m Total tokens [39m[90m│[39m[31m Clones found [39m[90m│[39m[31m Duplicated lines [39m[90m│[39m[31m Duplicated tokens [39m[90m│[39m
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
-[90m│[39m css        [90m│[39m 88             [90m│[39m 14122       [90m│[39m 57675        [90m│[39m 26           [90m│[39m 378 (2.68%)      [90m│[39m 3437 (5.96%)      [90m│[39m
+[90m│[39m css        [90m│[39m 88             [90m│[39m 14200       [90m│[39m 57675        [90m│[39m 26           [90m│[39m 378 (2.66%)      [90m│[39m 3437 (5.96%)      [90m│[39m
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
-[90m│[39m html       [90m│[39m 91             [90m│[39m 14380       [90m│[39m 24832        [90m│[39m 6            [90m│[39m 281 (1.95%)      [90m│[39m 724 (2.92%)       [90m│[39m
+[90m│[39m html       [90m│[39m 88             [90m│[39m 14002       [90m│[39m 23479        [90m│[39m 6            [90m│[39m 281 (2.01%)      [90m│[39m 730 (3.11%)       [90m│[39m
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
-[90m│[39m svelte     [90m│[39m 94             [90m│[39m 14312       [90m│[39m 71400        [90m│[39m 0            [90m│[39m 0 (0.00%)        [90m│[39m 0 (0.00%)         [90m│[39m
+[90m│[39m svelte     [90m│[39m 91             [90m│[39m 14104       [90m│[39m 70363        [90m│[39m 0            [90m│[39m 0 (0.00%)        [90m│[39m 0 (0.00%)         [90m│[39m
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
-[90m│[39m typescript [90m│[39m 110            [90m│[39m 7656        [90m│[39m 41648        [90m│[39m 34           [90m│[39m 486 (6.35%)      [90m│[39m 2939 (7.06%)      [90m│[39m
+[90m│[39m typescript [90m│[39m 106            [90m│[39m 7323        [90m│[39m 39792        [90m│[39m 30           [90m│[39m 435 (5.94%)      [90m│[39m 2618 (6.58%)      [90m│[39m
 [90m├────────────┼────────────────┼─────────────┼──────────────┼──────────────┼──────────────────┼───────────────────┤[39m
-[90m│[39m [1mTotal:[22m     [90m│[39m 383            [90m│[39m 50470       [90m│[39m 195555       [90m│[39m 66           [90m│[39m 1145 (2.27%)     [90m│[39m 7100 (3.63%)      [90m│[39m
+[90m│[39m [1mTotal:[22m     [90m│[39m 373            [90m│[39m 49629       [90m│[39m 191309       [90m│[39m 62           [90m│[39m 1094 (2.20%)     [90m│[39m 6785 (3.55%)      [90m│[39m
 [90m└────────────┴────────────────┴─────────────┴──────────────┴──────────────┴──────────────────┴───────────────────┘[39m
-[90mFound 66 clones.[39m
-[90mtime: 26.032ms[39m
+[90mFound 62 clones.[39m
+[90mtime: 20.255ms[39m
 
 [90m💡 Auto-refactor with AI: [1m[39mnpx skills add https://github.com/kucherenko/jscpd --skill dry-refactoring[90m[22m
 [90m🎩 New: Gangsta Agents — discipline your AI coding → gangsta.page[39m

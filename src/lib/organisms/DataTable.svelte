@@ -20,6 +20,14 @@
     emptyTitle?: string;
     emptyDescription?: string;
     stickyHeader?: boolean;
+    /** Enable row virtualization / windowing for handling large datasets. */
+    virtualize?: boolean;
+    /** Minimum row count threshold to activate virtualization automatically. Defaults to 50. */
+    threshold?: number;
+    /** Estimated or fixed row height in pixels. Defaults to 44. */
+    rowHeight?: number;
+    /** Viewport height for scroll calculations. Defaults to 440. */
+    viewportHeight?: number;
     onrowclick?: (row: Row) => void;
     /** Per-cell render override; falls back to the raw value */
     cell?: Snippet<[Row, Column<Row>]>;
@@ -38,12 +46,47 @@
     emptyTitle = 'Nothing here yet',
     emptyDescription = 'No records match this view.',
     stickyHeader = true,
+    virtualize = false,
+    threshold = 50,
+    rowHeight = 44,
+    viewportHeight = 440,
     onrowclick,
     cell,
     empty,
     class: className = '',
     ...restProps
   }: Props = $props();
+
+  let scrollTop = $state(0);
+  const overscan = 5;
+
+  let isVirtual = $derived(virtualize || rows.length >= threshold);
+
+  let startIndex = $derived(
+    isVirtual
+      ? Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)
+      : 0
+  );
+  let endIndex = $derived(
+    isVirtual
+      ? Math.min(rows.length, Math.ceil((scrollTop + viewportHeight) / rowHeight) + overscan)
+      : rows.length
+  );
+
+  let visibleRows = $derived(
+    isVirtual ? rows.slice(startIndex, endIndex) : rows
+  );
+
+  let paddingTop = $derived(isVirtual ? startIndex * rowHeight : 0);
+  let paddingBottom = $derived(
+    isVirtual ? Math.max(0, (rows.length - endIndex) * rowHeight) : 0
+  );
+
+  function handleScroll(e: Event) {
+    if (!isVirtual) return;
+    const target = e.currentTarget as HTMLElement;
+    scrollTop = target.scrollTop;
+  }
 
   const phone = isPhone();
 
@@ -131,7 +174,7 @@
   }
 </script>
 
-<div class="data-table-wrapper {className}" {...restProps}>
+<div class="data-table-wrapper {className}" onscroll={handleScroll} {...restProps}>
   {#if cards}
     <span class="sr-only" aria-live="polite">{sortLabel}</span>
 
@@ -165,15 +208,18 @@
     drops list semantics from a ul with list-style: none, so VoiceOver stops
     announcing the item count. The role restores it. -->
     <ul class="card-list" role="list">
-      {#each rows as row, index (getRowId(row, index))}
-        <li class="row-card" class:selected-row={selectedIds.includes(getRowId(row, index))}>
+      {#if paddingTop > 0}
+        <li class="virtual-spacer" style="height: {paddingTop}px" aria-hidden="true"></li>
+      {/if}
+      {#each visibleRows as row, index (getRowId(row, startIndex + index))}
+        <li class="row-card" class:selected-row={selectedIds.includes(getRowId(row, startIndex + index))}>
           <div class="card-head">
             {#if selectable}
               <Checkbox
-                checked={selectedIds.includes(getRowId(row, index))}
+                checked={selectedIds.includes(getRowId(row, startIndex + index))}
                 onchange={(e: Event) =>
-                  toggleRow(getRowId(row, index), (e.currentTarget as HTMLInputElement).checked)}
-                aria-label={`Select row ${getCellValue(row, leadColumn) ?? getRowId(row, index) ?? ''}`.trim()}
+                  toggleRow(getRowId(row, startIndex + index), (e.currentTarget as HTMLInputElement).checked)}
+                aria-label={`Select row ${getCellValue(row, leadColumn) ?? getRowId(row, startIndex + index) ?? ''}`.trim()}
               />
             {/if}
             {#if onrowclick}
@@ -201,6 +247,9 @@
           </dl>
         </li>
       {/each}
+      {#if paddingBottom > 0}
+        <li class="virtual-spacer" style="height: {paddingBottom}px" aria-hidden="true"></li>
+      {/if}
     </ul>
   {/if}
 
@@ -242,9 +291,14 @@
     </thead>
 
     <tbody>
-      {#each rows as row, index (getRowId(row, index))}
+      {#if paddingTop > 0}
+        <tr class="virtual-spacer" style="height: {paddingTop}px">
+          <td colspan={columns.length + (selectable ? 1 : 0)}></td>
+        </tr>
+      {/if}
+      {#each visibleRows as row, index (getRowId(row, startIndex + index))}
         <tr
-          class:selected-row={selectedIds.includes(getRowId(row, index))}
+          class:selected-row={selectedIds.includes(getRowId(row, startIndex + index))}
           class:clickable={!!onrowclick}
           tabindex={onrowclick ? 0 : undefined}
           onclick={() => onrowclick?.(row)}
@@ -253,10 +307,10 @@
           {#if selectable}
             <td class="select-col">
               <Checkbox
-                checked={selectedIds.includes(getRowId(row, index))}
+                checked={selectedIds.includes(getRowId(row, startIndex + index))}
                 onchange={(e: Event) =>
-                  toggleRow(getRowId(row, index), (e.currentTarget as HTMLInputElement).checked)}
-                aria-label={`Select row ${getCellValue(row, leadColumn) ?? getRowId(row, index) ?? ''}`.trim()}
+                  toggleRow(getRowId(row, startIndex + index), (e.currentTarget as HTMLInputElement).checked)}
+                aria-label={`Select row ${getCellValue(row, leadColumn) ?? getRowId(row, startIndex + index) ?? ''}`.trim()}
               />
             </td>
           {/if}
@@ -275,6 +329,11 @@
           {/each}
         </tr>
       {/each}
+      {#if paddingBottom > 0}
+        <tr class="virtual-spacer" style="height: {paddingBottom}px">
+          <td colspan={columns.length + (selectable ? 1 : 0)}></td>
+        </tr>
+      {/if}
     </tbody>
   </table>
 

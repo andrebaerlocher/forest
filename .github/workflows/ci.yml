@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  quality-gate:
+    name: Forest Quality Gate
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: SvelteKit Sync
+        run: bunx svelte-kit sync
+
+      - name: Type Check (svelte-check-native)
+        run: bun run check:native
+
+      - name: Svelte Doctor Conformance Check
+        run: bun run check:doctor
+
+      - name: Copy-Paste Code Duplication Check (jscpd)
+        run: bun run check:cpd
+
+      - name: Unit & Interaction Tests (bun test)
+        run: bun test
+
+      - name: Package Exports & Build Verification (publint)
+        run: bun run prepack
