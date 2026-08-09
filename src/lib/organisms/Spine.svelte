@@ -145,6 +145,179 @@
 {/if}
 
 <style>
+  :global(.spine-texture) {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    height: 100%;
+    overflow: hidden;
+  }
+
+  .panel-column {
+    width: 210px;
+    flex-shrink: 0;
+    height: 100%;
+    /* A veil over the same paper, plus one hairline — not a second slab.
+       The old flat var(--panel) fill was the hard seam. */
+    background: var(--wash-hover);
+    border-left: 1px solid var(--line-soft);
+    display: flex;
+    flex-direction: column;
+    padding: 28px 0 24px 8px;
+    min-width: 0;
+    min-height: 0;
+    overflow-y: auto;
+    scrollbar-width: none;
+    box-sizing: border-box;
+    transition: background var(--t-slow) var(--ease);
+  }
+
+  .panel-column::-webkit-scrollbar {
+    display: none;
+  }
+
+  .rail-column {
+    width: 64px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    padding: 24px 0;
+    box-sizing: border-box;
+  }
+
+  /* Reproduces what the demo templates' own .rail-bottom did, so splitting
+     the rail snippet in two leaves .rail-column with the same two flex
+     children and `justify-content: space-between` resolves identically. */
+  .rail-footer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+  }
+
+  /* The wordmark and mode seal, re-homed at the foot of the phone drawer. */
+  .drawer-footer {
+    margin-top: auto;
+    padding-top: 24px;
+    border-top: 1px solid var(--line-soft);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  /* a wordmark cannot run vertically in a horizontal footer */
+  .drawer-footer :global(.wordmark-vertical) {
+    writing-mode: horizontal-tb;
+    transform: none;
+    margin: 0;
+  }
+
+  .spine-layout-grid {
+    display: flex;
+    flex: 1;
+    height: 100%;
+    width: 100%;
+    min-width: 0;
+    min-height: 0; /* lets .panel-column scroll internally */
+  }
+
+  nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    font-size: 13px;
+  }
+
+  /* Support legacy navigation if no snippets are passed */
+  .legacy-nav-wrapper {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 32px 16px 24px 20px;
+    box-sizing: border-box;
+    height: 100%;
+    min-width: 0;
+  }
+
+  .legacy-nav-wrapper nav {
+    overflow-y: auto;
+    scrollbar-width: none;
+    flex-shrink: 1;
+  }
+
+  .legacy-nav-wrapper nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .spine-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    width: 100%;
+  }
+
+  .legacy-nav-wrapper .spine-controls {
+    align-items: stretch;
+    margin-top: auto;
+    padding-top: 24px;
+  }
+
+  .wordmark-container {
+    padding: 16px 8px;
+  }
+
+  .wordmark {
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    letter-spacing: 0.5em;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+    writing-mode: vertical-lr;
+    text-orientation: mixed;
+    transform: rotate(180deg);
+  }
+
+  .wordmark-sub {
+    font-family: var(--font-body);
+    font-size: 11px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--text-3);
+    display: none;
+  }
+
+
+
+  :global(nav a) {
+    color: oklch(94.5% 0.012 95 / 60%);
+    text-decoration: none;
+    padding: 6px 14px 6px 12px;
+    border-radius: 8px 0 0 8px;
+    transition:
+      background var(--t-fast) var(--ease),
+      color var(--t-fast) var(--ease);
+    font-family: var(--font-body);
+    display: block;
+  }
+
+  :global(nav a:hover),
+  :global(nav a:focus-visible) {
+    color: var(--text-inverse);
+    background: oklch(94.5% 0.012 95 / 8%);
+    outline: none;
+  }
+
+  :global(nav a:focus-visible) {
+    box-shadow: inset 0 0 0 1.5px var(--accent);
+  }
+
   .spine {
     width: 210px;
     flex-shrink: 0;
@@ -204,177 +377,6 @@
       padding-right: 22px;
       box-sizing: border-box;
     }
-  }
-
-  :global(.spine-texture) {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    height: 100%;
-    overflow: hidden;
-  }
-
-  .spine-layout-grid {
-    display: flex;
-    flex: 1;
-    height: 100%;
-    width: 100%;
-    min-width: 0;
-    min-height: 0; /* lets .panel-column scroll internally */
-  }
-
-  .rail-column {
-    width: 64px;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: space-between;
-    flex-shrink: 0;
-    padding: 24px 0;
-    box-sizing: border-box;
-  }
-
-  /* Reproduces what the demo templates' own .rail-bottom did, so splitting
-     the rail snippet in two leaves .rail-column with the same two flex
-     children and `justify-content: space-between` resolves identically. */
-  .rail-footer {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-  }
-
-  /* The wordmark and mode seal, re-homed at the foot of the phone drawer. */
-  .drawer-footer {
-    margin-top: auto;
-    padding-top: 24px;
-    border-top: 1px solid var(--line-soft);
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 16px;
-  }
-
-  /* a wordmark cannot run vertically in a horizontal footer */
-  .drawer-footer :global(.wordmark-vertical) {
-    writing-mode: horizontal-tb;
-    transform: none;
-    margin: 0;
-  }
-
-  .panel-column {
-    width: 210px;
-    flex-shrink: 0;
-    height: 100%;
-    /* A veil over the same paper, plus one hairline — not a second slab.
-       The old flat var(--panel) fill was the hard seam. */
-    background: var(--wash-hover);
-    border-left: 1px solid var(--line-soft);
-    display: flex;
-    flex-direction: column;
-    padding: 28px 0 24px 8px;
-    min-width: 0;
-    min-height: 0;
-    overflow-y: auto;
-    scrollbar-width: none;
-    box-sizing: border-box;
-    transition: background var(--t-slow) var(--ease);
-  }
-
-  .panel-column::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Support legacy navigation if no snippets are passed */
-  .legacy-nav-wrapper {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    padding: 32px 16px 24px 20px;
-    box-sizing: border-box;
-    height: 100%;
-    min-width: 0;
-  }
-
-  .legacy-nav-wrapper nav {
-    overflow-y: auto;
-    scrollbar-width: none;
-    flex-shrink: 1;
-  }
-
-  .legacy-nav-wrapper nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .legacy-nav-wrapper .spine-controls {
-    align-items: stretch;
-    margin-top: auto;
-    padding-top: 24px;
-  }
-
-  .wordmark-container {
-    padding: 16px 8px;
-  }
-
-  .wordmark {
-    font-family: var(--font-body);
-    font-size: 13px;
-    font-weight: 500;
-    letter-spacing: 0.5em;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-    writing-mode: vertical-lr;
-    text-orientation: mixed;
-    transform: rotate(180deg);
-  }
-
-  .wordmark-sub {
-    font-family: var(--font-body);
-    font-size: 11px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    color: var(--text-3);
-    display: none;
-  }
-
-  nav {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    font-size: 13px;
-  }
-
-  :global(nav a) {
-    color: oklch(94.5% 0.012 95 / 60%);
-    text-decoration: none;
-    padding: 6px 14px 6px 12px;
-    border-radius: 8px 0 0 8px;
-    transition:
-      background var(--t-fast) var(--ease),
-      color var(--t-fast) var(--ease);
-    font-family: var(--font-body);
-    display: block;
-  }
-
-  :global(nav a:hover),
-  :global(nav a:focus-visible) {
-    color: var(--text-inverse);
-    background: oklch(94.5% 0.012 95 / 8%);
-    outline: none;
-  }
-
-  :global(nav a:focus-visible) {
-    box-shadow: inset 0 0 0 1.5px var(--accent);
-  }
-
-  .spine-controls {
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    align-items: center;
-    width: 100%;
   }
 
   @media (max-width: 760px) {

@@ -11,7 +11,7 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"storybook": "storybook dev -p 6006",
 		"build-storybook": "storybook build",
-		"lint": "biome check src",
+		"lint": "biome check src tests",
 		"format": "biome format --write src",
 		"check:native": "svelte-check-native --workspace .",
 		"check:doctor": "svelte-doctor check",
@@ -53,6 +53,7 @@
 		"@sveltejs/kit": "^2.70.2",
 		"@sveltejs/package": "^2.5.8",
 		"@sveltejs/vite-plugin-svelte": "^7.2.0",
+		"@types/katex": "^0.16.8",
 		"@types/node": "^22",
 		"@typescript/native-preview": "^7.0.0-dev.20260707.2",
 		"@vitest/browser-playwright": "^4.1.10",
@@ -90,5 +91,8 @@
 				"no-unnecessary-state"
 			]
 		}
+	},
+	"dependencies": {
+		"katex": "^0.18.1"
 	}
 }

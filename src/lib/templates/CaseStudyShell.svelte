@@ -87,37 +87,14 @@
   use:scrollspy={{ ids, onchange: handleActive }}
   {...restProps}
 >
-  <header class="cs-header">
-    {#if tags.length > 0}
-      <div class="cs-tag-row">
-        {#each tags as tag (tag)}
-          <Tag variant="standard">{tag}</Tag>
-        {/each}
-      </div>
-    {/if}
-
-    <h1 class="cs-title">{title}</h1>
-
-    {#if subtitle}
-      <p class="cs-subtitle">{subtitle}</p>
-    {/if}
-
-    {#if heroVisualization}
-      <div class="cs-hero-vis">
-        {@render heroVisualization()}
-      </div>
-    {/if}
-
-    {#if metrics.length > 0}
-      <MetricGrid {metrics} />
-    {/if}
-  </header>
-
   <!-- Both the rail and the trigger are always in the DOM; CSS alone decides
        which one exists visually. Following the house rule, JavaScript never
        gets to make that call, so there is no hydration flash. A display:none
        nav is out of the accessibility tree, so the drawer's copy — which only
-       mounts while open — never duplicates the landmark. -->
+       mounts while open — never duplicates the landmark. Kept ahead of the
+       reading column in DOM/tab order (it's the first thing a keyboard user
+       hits, matching its pinned-at-top visual position) rather than after a
+       potentially very long article. -->
   {#if entries.length > 0}
     <button
       type="button"
@@ -134,11 +111,43 @@
     </div>
   {/if}
 
-  <article class="cs-article" bind:this={articleEl}>
-    {#if children}
-      {@render children()}
-    {/if}
-  </article>
+  <!-- Grouped so the wide-tier grid can place the rail as a single sibling
+       column spanning one row alongside header+article together — a sticky
+       item spanning multiple explicit grid rows fails to stick in some
+       engines, so header and article share one row instead. -->
+  <div class="cs-main-col">
+    <header class="cs-header">
+      {#if tags.length > 0}
+        <div class="cs-tag-row">
+          {#each tags as tag (tag)}
+            <Tag variant="standard">{tag}</Tag>
+          {/each}
+        </div>
+      {/if}
+
+      <h1 class="cs-title">{title}</h1>
+
+      {#if subtitle}
+        <p class="cs-subtitle">{subtitle}</p>
+      {/if}
+
+      {#if heroVisualization}
+        <div class="cs-hero-vis">
+          {@render heroVisualization()}
+        </div>
+      {/if}
+
+      {#if metrics.length > 0}
+        <MetricGrid {metrics} />
+      {/if}
+    </header>
+
+    <article class="cs-article" bind:this={articleEl}>
+      {#if children}
+        {@render children()}
+      {/if}
+    </article>
+  </div>
 </div>
 
 {#if drawerOpen}
@@ -208,6 +217,20 @@
     flex-direction: column;
     gap: 40px;
     min-width: 0;
+    /* Shared left margin used as an orientation gutter — Section numbers and
+       StackManifest's category labels both anchor to this so they read as one
+       page-wide wayfinding column instead of unrelated local details. Reserved
+       via padding so descendants can position into it without overflowing the
+       grid track. */
+    --cs-gutter: 96px;
+    padding-left: var(--cs-gutter);
+  }
+
+  /* A pass-through wrapper below the split — header and article stay direct
+     flex children of .cs-shell so the narrow-width stacked layout is
+     untouched. Only becomes a real box at the grid breakpoint, below. */
+  .cs-main-col {
+    display: contents;
   }
 
   /* Sticky so a reader forty screens deep can still jump. */
@@ -256,31 +279,42 @@
   }
 
   /* At the split line a secondary pane fits beside the primary one, so the
-     outline graduates from a modal drawer to a permanent rail. */
-  @media (min-width: 1101px) {
+     outline graduates from a modal drawer to a permanent rail. Queried
+     against the shell's own available width (via the container context
+     established on Shell's .main), not the viewport — the Spine rail's
+     collapsed/expanded state shifts available width by ~146px, which a
+     viewport media query can't account for. */
+  @container (min-width: 860px) {
     .cs-shell {
       max-width: 1160px;
       display: grid;
       grid-template-columns: minmax(0, 1fr) 232px;
       column-gap: 48px;
-      row-gap: 28px;
       align-items: start;
     }
 
-    .cs-header {
-      grid-column: 1 / -1;
+    /* Header and article become one grid item sharing a single row with the
+       rail (rather than the rail spanning two rows) — a sticky item spanning
+       multiple explicit grid rows doesn't stick reliably in some engines. */
+    .cs-main-col {
+      display: flex;
+      flex-direction: column;
+      gap: 28px;
+      grid-column: 1;
       grid-row: 1;
+      min-width: 0;
     }
 
     .cs-article {
-      grid-column: 1;
-      grid-row: 2;
+      --cs-gutter: 140px;
     }
 
+    /* Starts level with the title (same row as .cs-main-col) instead of only
+       appearing once a reader scrolls past the header. */
     .cs-toc-rail {
       display: block;
       grid-column: 2;
-      grid-row: 2;
+      grid-row: 1;
       position: sticky;
       top: 24px;
       max-height: calc(100vh - 48px);
@@ -303,9 +337,9 @@
     }
   }
 
-  /* The reserved wide breakpoint's first consumer: past 1440px the reading
+  /* The reserved wide tier's first consumer: past this width the reading
      column stops growing and the extra room goes to the rail. */
-  @media (min-width: 1441px) {
+  @container (min-width: 1040px) {
     .cs-shell {
       max-width: 1340px;
       grid-template-columns: minmax(0, 1fr) 280px;
@@ -321,6 +355,13 @@
 
     .cs-title {
       font-size: 24px;
+    }
+
+    /* No room to spare for marginalia at this width — Section and
+       StackManifest both fall back to static/stacked layouts here too. */
+    .cs-article {
+      --cs-gutter: 0px;
+      padding-left: 0;
     }
   }
 </style>

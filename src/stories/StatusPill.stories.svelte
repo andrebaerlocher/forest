@@ -30,8 +30,18 @@
   </div>
 {/snippet}
 
+{#snippet VariantsTemplate()}
+  <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+    <StatusPill status="success" variant="solid" label="Solid (Default)" />
+    <StatusPill status="success" variant="dashed" label="Accepted (Dashed)" />
+    <StatusPill status="success" variant="strong" label="Final (Strong)" />
+  </div>
+{/snippet}
+
 <Story name="Neutral" args={{ status: 'neutral', label: 'Open' }} />
 
 <Story name="All statuses" render={AllTemplate} />
+
+<Story name="Border variants" render={VariantsTemplate} />
 
 <Story name="Bare — status as ink" render={BareTemplate} />

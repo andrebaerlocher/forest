@@ -15,21 +15,21 @@
     id: 'adr-001',
     title: 'Cache recommendation scores for 30 seconds',
     status: 'proposed',
-    context: 'Recommendation latency is our p99 constraint. Current average is 380µs, but we need to handle 10,000 concurrent users.',
-    decision: 'Implement a 30-second TTL cache for recommendation scores, keyed by (learner_id, knowledge_state_hash).',
+    context: 'Recommendation **latency** is our *p99 constraint*. Current average is `380µs`, but we need to handle 10,000 concurrent users. See [architecture docs](https://example.com/docs).',
+    decision: 'Implement a **30-second TTL cache** for recommendation scores, keyed by `(learner_id, knowledge_state_hash)`.',
     consequences: [
-      'Reduces database queries by 85% in normal operation',
-      'Introduces 30-second staleness in knowledge state updates',
-      'Requires cache invalidation strategy for curriculum changes',
-      'Cache misses on cold starts cost 120µs additional latency'
+      'Reduces database queries by **85%** in *normal operation*',
+      'Introduces **30-second staleness** in knowledge state updates',
+      'Requires cache invalidation strategy for *curriculum changes*',
+      'Cache misses on cold starts cost `120µs` additional latency'
     ],
     alternatives: [
       {
-        option: 'No caching; optimize query layer instead',
-        rejectedBecause: 'Database layer already uses indexes and connection pooling. Further gains require hardware scaling.'
+        option: 'No caching; optimize *query layer* instead',
+        rejectedBecause: 'Database layer already uses **indexes** and **connection pooling**. Further gains require hardware scaling.'
       },
       {
-        option: 'Longer TTL (60s or 120s)',
+        option: 'Longer TTL (`60s` or `120s`)',
         rejectedBecause: 'Pedagogically risky; staleness could recommend already-mastered content.'
       }
     ]
@@ -58,6 +58,28 @@
       {
         option: 'Crowdsourced grading (Mechanical Turk-style)',
         rejectedBecause: 'Quality control difficult; cost approaches manual grading; latency still 10+ minutes per essay.'
+      }
+    ]
+  }}
+/>
+
+<Story
+  name="Final"
+  args={{
+    id: 'adr-002-b',
+    title: 'Adopt PostgreSQL as primary relational storage',
+    status: 'final',
+    context: 'The system requires a highly reliable transactional storage engine with robust extension support.',
+    decision: 'Standardize on PostgreSQL 16 for all relational data and transactional boundaries.',
+    consequences: [
+      'Guarantees ACID compliance across core entities',
+      'Leverages JSONB support for flexible payload attributes',
+      'Simplifies operational backups and replication'
+    ],
+    alternatives: [
+      {
+        option: 'MySQL 8',
+        rejectedBecause: 'Inferior JSON query performance and less rich extension ecosystem.'
       }
     ]
   }}

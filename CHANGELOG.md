@@ -5,6 +5,13 @@ All notable changes to the **Forest** Svelte 5 component library will be documen
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Status Variants for DecisionRecord & StatusPill**: Added `variant` prop (`solid`, `dashed`, `strong`) to `StatusPill`. Extended `DecisionStatus` in `domain.ts` with `final` and `rejected` states, visually distinguishing `accepted` (dashed border) from `final` (strong solid border).
+- **Inline Markdown Formatting (`FormattedText`)**: Added `FormattedText` atom supporting lightweight inline markdown formatting (bold, italic, code snippets, links) across DecisionRecord and case study content.
+- **Local TOC Scoping in `DeepDive`**: Integrated `createTocRegistry` into `DeepDive` so nested `Section` elements automatically populate the module's internal jump list without leaking into page-level navigation.
+
 ## [0.1.0] - 2026-08-02
 
 ### Added

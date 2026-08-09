@@ -1,7 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
-  import { useTocRegistry } from '../caseStudyToc.svelte.js';
+  import { createTocRegistry, provideTocRegistry, useTocRegistry } from '../caseStudyToc.svelte.js';
   import type { TocEntry } from '../domain.js';
   import {
     clampHeadingLevel,
@@ -16,7 +16,12 @@
     title: string;
     /** One or two sentences on what this module does and why it is here. */
     summary?: string;
-    /** Anchors inside this module. Rendered as a jump list when 2 or more. */
+    /**
+     * Anchors inside this module. Rendered as a jump list when 2 or more.
+     * Omit it and the list is collected from the Section components mounted
+     * inside this DeepDive — pass this only when the list must be
+     * server-rendered, or to override what auto-collects.
+     */
     subsections?: TocEntry[];
     /** Overrides the level inherited from the enclosing container. */
     level?: HeadingLevel;
@@ -25,6 +30,7 @@
     /** Keep this module out of the enclosing shell's table of contents. */
     unlisted?: boolean;
     class?: string;
+    showLinks?: boolean;
     children?: Snippet;
   }
 
@@ -32,11 +38,12 @@
     id,
     title,
     summary,
-    subsections = [],
+    subsections,
     level,
     eyebrow = 'Deep dive',
     unlisted = false,
     class: className = '',
+    showLinks = false,
     children,
     ...restProps
   }: Props = $props();
@@ -51,6 +58,14 @@
   const resolvedLevel: HeadingLevel = level ?? inheritedLevel;
   // Everything mounted inside this module is a part of it, not a peer of it.
   provideHeadingLevel(clampHeadingLevel(resolvedLevel + 1));
+
+  // A DeepDive is its own outline scope: nested Sections report here instead
+  // of to the enclosing shell, so they populate this module's jump list
+  // rather than leaking into the page-level table of contents.
+  const localToc = createTocRegistry();
+  provideTocRegistry(localToc);
+
+  let resolvedSubsections = $derived(subsections ?? localToc.entries);
 
   let node = $state<HTMLElement>();
 
@@ -84,10 +99,10 @@
   <!-- A jump list, not a tab strip: these anchors scroll to content that stays
        on the page. Tab semantics would promise panels that hide each other,
        and long-form content must stay linkable and continuously readable. -->
-  {#if subsections.length > 1}
+  {#if resolvedSubsections.length > 1 && showLinks}
     <nav class="cs-deepdive-nav" aria-label="{title} contents">
       <ul>
-        {#each subsections as subsection (subsection.id)}
+        {#each resolvedSubsections as subsection (subsection.id)}
           <li><a href="#{subsection.id}">{subsection.label}</a></li>
         {/each}
       </ul>

@@ -35,15 +35,19 @@
     commands.filter((cmd) => cmd.label.toLowerCase().includes(searchVal.toLowerCase()))
   );
 
-  // Reset the cursor whenever the result set changes under it
+  let lastSearch = $state('');
   $effect(() => {
-    filtered.length;
-    highlighted = 0;
+    if (searchVal !== lastSearch) {
+      lastSearch = searchVal;
+      highlighted = 0;
+    }
   });
 
-  // Clear the query each time the palette opens
   $effect(() => {
-    if (open) searchVal = '';
+    if (!open) {
+      searchVal = '';
+      highlighted = 0;
+    }
   });
 
   function handleSelect(id: string) {

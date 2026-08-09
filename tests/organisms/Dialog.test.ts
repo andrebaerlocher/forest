@@ -1,6 +1,6 @@
-import { tick, unmount } from "svelte";
+import { mount, tick, unmount } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mountComponent } from "../../test-support/test-component-loader.js";
+import Dialog from "$lib/organisms/Dialog.svelte";
 
 describe("Dialog genuine Svelte 5 component interaction tests", () => {
   let container: HTMLDivElement;
@@ -17,7 +17,7 @@ describe("Dialog genuine Svelte 5 component interaction tests", () => {
   });
 
   it("does not render dialog DOM when open is false", async () => {
-    const instance = await mountComponent("src/lib/organisms/Dialog.svelte", {
+    const instance = mount(Dialog, {
       target: container,
       props: {
         open: false,
@@ -30,7 +30,7 @@ describe("Dialog genuine Svelte 5 component interaction tests", () => {
   });
 
   it("renders dialog DOM, title, and modal accessibility attributes when open is true", async () => {
-    const instance = await mountComponent("src/lib/organisms/Dialog.svelte", {
+    const instance = mount(Dialog, {
       target: container,
       props: {
         open: true,
@@ -51,7 +51,7 @@ describe("Dialog genuine Svelte 5 component interaction tests", () => {
   });
 
   it("applies lg modifier class when size is set to lg", async () => {
-    const instance = await mountComponent("src/lib/organisms/Dialog.svelte", {
+    const instance = mount(Dialog, {
       target: container,
       props: {
         open: true,
@@ -69,7 +69,7 @@ describe("Dialog genuine Svelte 5 component interaction tests", () => {
   it("triggers onclose callback when Escape key is pressed", async () => {
     const onclose = vi.fn();
 
-    const instance = await mountComponent("src/lib/organisms/Dialog.svelte", {
+    const instance = mount(Dialog, {
       target: container,
       props: {
         open: true,
@@ -90,7 +90,7 @@ describe("Dialog genuine Svelte 5 component interaction tests", () => {
   it("triggers onclose callback when Scrim backdrop overlay is clicked", async () => {
     const onclose = vi.fn();
 
-    const instance = await mountComponent("src/lib/organisms/Dialog.svelte", {
+    const instance = mount(Dialog, {
       target: container,
       props: {
         open: true,

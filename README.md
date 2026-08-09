@@ -1,33 +1,79 @@
-# A Forest — component library
+# A Forest — Component Library
 
-Everything you need to build a Svelte library, powered by [`sv`](https://npmjs.com/package/sv).
+![Svelte 5](https://img.shields.io/badge/Svelte-v5-FF3E00?logo=svelte&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-Strict-3178C6?logo=typescript&logoColor=white)
+![Bun](https://img.shields.io/badge/Bun-Package%20Manager-fbf0df?logo=bun&logoColor=black)
+![Storybook](https://img.shields.io/badge/Storybook-v10-FF4785?logo=storybook&logoColor=white)
+![Biome](https://img.shields.io/badge/Code%20Style-Biome-60A5FA?logo=biome&logoColor=white)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Read more about creating a library [in the docs](https://svelte.dev/docs/kit/packaging).
+> A modern, unstyled Svelte 5 component library built with CSS design tokens, built-in accessibility focus management, and an Atomic Design architecture.
 
-## Using it in an app
+---
 
-The components are unstyled without the token stylesheet — every `--hue`,
-`--ink-*` and `--wave-mask-*` lives there. Import it once, at the app root:
+## Key Features
 
-```js
-import 'forest/styles/forest.css';
+- **Svelte 5 Native**: Built from the ground up leveraging Svelte 5 runes, snippets, and type-safe exports.
+- **Atomic Design Architecture**: Cleanly categorized components (`atoms`, `molecules`, `organisms`, `templates`).
+- **Single-Number Theming**: Rotate `--hue` on `:root` (e.g. indigo 282, pine 165, oxblood 20, slate 250) to instantly transform the theme.
+- **Accessible Focus Management**: Built-in `focusTrap` action for dialogs, drawers, command palettes, and custom surfaces.
+- **Toast Queue System**: Push toasts from anywhere using `toaster` and render them cleanly with `ToastRegion`.
+- **Dark / Ink Paper Scopes**: Scope dark surfaces with `.on-ink` (or `PaperTexture`) to flip canvas tokens automatically.
+
+---
+
+## Component Architecture (Atomic Design)
+
+Components inside `src/lib/` are structured according to Atomic Design principles:
+
+| Directory            | Scope                                 | Examples                                       |
+| -------------------- | ------------------------------------- | ---------------------------------------------- |
+| `src/lib/atoms/`     | Primitives & singular visual elements | `Button.svelte`, `Input.svelte`, `Wave.svelte` |
+| `src/lib/molecules/` | Simple compositions of 2+ atoms       | `FormField.svelte`, `Slip.svelte`              |
+| `src/lib/organisms/` | Complex structural combinations       | `LedgerTable.svelte`, `Spine.svelte`           |
+| `src/lib/templates/` | High-level page layout grids & shells | `Shell.svelte`                                 |
+
+---
+
+## Installation & Setup
+
+### 1. Install the Package
+
+```sh
+bun add forest
+# or via npm / pnpm / yarn:
+# npm install forest
 ```
 
-Then import components from the package root:
+### 2. Import CSS Design Tokens
+
+The components rely on token stylesheet CSS variables (`--hue`, `--ink-*`, `--wave-mask-*`). Import it once at your application root:
 
 ```js
-import { DataTable, Combobox, StatusPill } from 'forest';
+import "forest/styles/forest.css";
 ```
 
-Prop types are exported alongside them, derived from the components so they
-cannot drift, together with the domain shapes you construct:
+### 3. Using Components & Types
+
+Import components directly from the package root:
+
+```js
+import { DataTable, Combobox, StatusPill } from "forest";
+```
+
+Prop types and domain shapes are exported alongside components so they never drift:
 
 ```ts
-import type { DataTableProps, DataTableColumn, Command, Status } from 'forest';
+import type { DataTableProps, DataTableColumn, Command, Status } from "forest";
 ```
 
-Toasts queue rather than replacing one another. Render one region, push from
-anywhere:
+---
+
+## Usage Examples
+
+### Toast System
+
+Toasts queue automatically rather than replacing one another. Place `<ToastRegion />` once in your layout and trigger toasts anywhere:
 
 ```svelte
 <script>
@@ -35,78 +81,66 @@ anywhere:
 </script>
 
 <ToastRegion />
-<button onclick={() => toaster.success('Saved to the ledger')}>Save</button>
+
+<button onclick={() => toaster.success('Saved to the ledger')}>
+  Save Entry
+</button>
 ```
 
-`Dialog`, `Drawer` and `CommandPalette` trap Tab while open and hand focus back
-to the trigger when they close. The same `focusTrap` action is exported for your
-own transient surfaces.
+### Focus Management & Accessibility
 
-Theming is one number: rotate `--hue` on `:root` (indigo 282, pine 165,
-oxblood 20, slate 250). Set `data-mode="light|dark"` and
-`data-density="comfortable|compact"` on the same element.
+Surfaces like `Dialog`, `Drawer`, and `CommandPalette` automatically trap `Tab` navigation while open and return focus to the trigger element when closed.
 
-Any component placed on dark "ink" paper (the spine, a drawer, the command
-palette) should sit inside a `.on-ink` scope — `PaperTexture` applies it
-automatically — which flips the canvas tokens so text, hairlines and washes
-read correctly without per-component overrides.
+You can also use the exported `focusTrap` action on custom surfaces:
 
-## Creating a project
+```svelte
+<script>
+  import { focusTrap } from 'forest';
+</script>
 
-If you're seeing this, you've probably already done this step. Congrats!
-
-```sh
-# create a new project in the current directory
-npx sv create
-
-# create a new project in my-app
-npx sv create my-app
+<div use:focusTrap>
+  <input type="text" placeholder="Search..." />
+  <button>Submit</button>
+</div>
 ```
 
-To recreate this project with the same configuration:
+### Theming & Ink Scopes
 
-```sh
-# recreate this project
-bun x sv@0.16.3 create --template library --types ts --add storybook mcp="ide:other+setup:remote" --install bun ./
+Customize theme hues and modes directly on `:root`:
+
+```css
+:root {
+  --hue: 165; /* Pine: 165, Indigo: 282, Oxblood: 20, Slate: 250 */
+}
 ```
 
-## Developing
+Set dark/light mode and density on the same element:
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+```html
+<html data-mode="dark" data-density="compact"></html>
 ```
 
-Everything inside `src/lib` is part of your library, everything inside `src/routes` can be used as a showcase or preview app.
+Any component placed on dark paper (e.g. `Spine`, `Drawer`, `CommandPalette`) automatically flips canvas tokens when inside an `.on-ink` scope or `PaperTexture` component.
 
-## Building
+---
 
-To build your library:
+## Local Development & Scripts
 
-```sh
-npm pack
-```
+| Command            | Description                                            |
+| ------------------ | ------------------------------------------------------ |
+| `bun dev`          | Starts the Vite development showcase server            |
+| `bun storybook`    | Launches Storybook component workspace on port `6006`  |
+| `bun run check`    | Runs Svelte compiler and TypeScript type checks        |
+| `bun run lint`     | Runs Biome linter across `src/`                        |
+| `bun run format`   | Formats code with Biome                                |
+| `bun run test`     | Runs unit test suite via Vitest                        |
+| `bun run diagnose` | Runs consolidated project quality & conformance checks |
+| `bun run build`    | Builds package distribution outputs (`dist/`)          |
 
-To create a production version of your showcase app:
+> Note: Template initialization details and `sv create` setup commands are archived in [BOILERPLATE.md](file:///Users/andrebarlocher/Documents/Svelte/Forest/BOILERPLATE.md).
 
-```sh
-npm run build
-```
+---
 
-You can preview the production build with `npm run preview`.
+## License
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
-
-## Publishing
-
-Go into the `package.json` and give your package the desired name through the `"name"` option. Also consider adding a `"license"` field and point it to a `LICENSE` file which you can create from a template (one popular option is the [MIT license](https://opensource.org/license/mit/)).
-
-To publish your library to [npm](https://www.npmjs.com):
-
-```sh
-npm publish
-```
+This project is licensed under the [MIT License](LICENSE).

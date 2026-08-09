@@ -23,7 +23,7 @@
 }
 
 :root {
-  --hue: 282; /* indigo default. pine ≈ 165, oxblood ≈ 20, slate ≈ 250 */
+  --hue: 282; /* indigo ≈ 282, pine ≈ 165, oxblood ≈ 20, slate ≈ 250, ??? = 222 */
 
   /* fixed materials — never rotate */
   --paper-l: oklch(96.5% 0.012 95);
@@ -46,12 +46,24 @@
 
   --text-1: var(--ink-3);
   --text-2: oklch(38% 0.02 100);
-  --text-3: oklch(60% 0.025 100);
+  /* Tertiary ink is still ink, not decoration: it carries captions, metric
+     labels and the rejected-alternative reasoning, all set at 11–13px. The
+     lightness is pinned so it clears 4.5:1 on the *dimmest* ground it ever
+     lands on — --wash over --raised — not just on bare --canvas. */
+  --text-3: oklch(50% 0.025 100);
   --text-inverse: oklch(94.5% 0.012 95);
 
   --line-soft: oklch(91.5% 0.02 95);
   --line-mid: oklch(89.5% 0.02 95);
   --line-strong: var(--ink-3);
+
+  /* Rules in the reading column — <Divider>, section breaks. Separate from the
+     --line-* family, which is tuned for a component's own edge against its own
+     --raised. A rule sits on whatever paper the page is using, so it is defined
+     per mode rather than derived, and lands ~2:1 soft / ~3.3:1 strong on all
+     three papers. */
+  --rule-soft: oklch(29% 0.055 var(--hue) / 34%);
+  --rule-strong: oklch(29% 0.055 var(--hue) / 55%);
   --wash: oklch(29% 0.055 var(--hue) / 5%);
   --wash-hover: oklch(29% 0.055 var(--hue) / 2.5%);
   --neomorphic-shadow: oklch(35% 0.015 var(--hue) / 3.5%);
@@ -166,11 +178,17 @@
 
   --text-1: oklch(94.5% 0.012 95);
   --text-2: oklch(87% 0.02 var(--hue));
-  --text-3: oklch(60% 0.035 var(--hue));
+  /* 4.53:1 on --wash over --raised, the dimmest ground tertiary ink lands on. */
+  --text-3: oklch(70% 0.035 var(--hue));
 
-  --line-soft: oklch(29% 0.05 var(--hue));
-  --line-mid: oklch(31% 0.05 var(--hue));
+  /* Dark paper gives a hairline far less to work with than light paper does:
+     the same nominal step that reads as a rule on --paper-l washes straight
+     into --canvas here. These sit ~1.5:1 / ~1.9:1 rather than ~1.2:1. */
+  --line-soft: oklch(36% 0.05 var(--hue));
+  --line-mid: oklch(41% 0.05 var(--hue));
   --line-strong: oklch(80.5% 0.02 96);
+  --rule-soft: oklch(94.5% 0.012 95 / 24%);
+  --rule-strong: oklch(94.5% 0.012 95 / 38%);
   --wash: oklch(94.5% 0.012 95 / 7%);
   --wash-hover: oklch(94.5% 0.012 95 / 3.5%);
   --neomorphic-shadow: oklch(8% 0.01 var(--hue) / 40%);
@@ -198,13 +216,18 @@
    ───────────────────────────────────────────────────────────── */
 .on-ink,
 [data-surface="ink"] {
+  /* An even 100/80/60 ladder. 45% tertiary bottomed out at ~3.6:1 once the
+     ink surface was --panel rather than --spine; 60% clears 4.5:1 on every
+     ink paper in the system, including --raised layered on top of one. */
   --text-1: oklch(94.5% 0.012 95);
-  --text-2: oklch(94.5% 0.012 95 / 72%);
-  --text-3: oklch(94.5% 0.012 95 / 45%);
+  --text-2: oklch(94.5% 0.012 95 / 80%);
+  --text-3: oklch(94.5% 0.012 95 / 60%);
 
   --line-soft: oklch(94.5% 0.012 95 / 10%);
   --line-mid: oklch(94.5% 0.012 95 / 18%);
   --line-strong: oklch(94.5% 0.012 95 / 32%);
+  --rule-soft: oklch(94.5% 0.012 95 / 24%);
+  --rule-strong: oklch(94.5% 0.012 95 / 40%);
 
   --wash: oklch(94.5% 0.012 95 / 10%);
   --wash-hover: oklch(94.5% 0.012 95 / 5%);

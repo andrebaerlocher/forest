@@ -47,6 +47,21 @@ if (typeof globalThis.window === "undefined" || !globalThis.document?.body) {
   });
 }
 
+if (typeof HTMLElement !== "undefined") {
+  Object.defineProperty(HTMLElement.prototype, "offsetWidth", {
+    get() {
+      return 10;
+    },
+    configurable: true,
+  });
+  Object.defineProperty(HTMLElement.prototype, "offsetHeight", {
+    get() {
+      return 10;
+    },
+    configurable: true,
+  });
+}
+
 if (!globalThis.CSS) {
   (globalThis as unknown as Record<string, unknown>).CSS = {
     escape: (str: string) => String(str).replace(/([^\w-])/g, "\\$1"),

@@ -4,7 +4,7 @@ import {
   getForestMermaidTheme,
   getForestThemeColors,
   oklchToHex,
-} from "./diagrams.js";
+} from "$lib/diagrams.js";
 
 describe("oklchToHex", () => {
   it("converts paper lightness OKLCH to expected hex", () => {

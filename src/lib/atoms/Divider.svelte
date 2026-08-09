@@ -18,19 +18,23 @@
 />
 
 <style>
+  /* --rule-*, not --line-*: a divider is a rule in the reading column, not a
+     component edge. The line tokens are tuned for a border against that
+     component's own --raised, which on dark paper left this at 1.17:1 —
+     invisible — while --line-strong overshot into a bright bar. */
   .divider {
-    background: var(--line-soft);
+    background: var(--rule-soft);
     transition: background var(--t-base) var(--ease);
     border: none;
   }
 
   /* Soft and strong variants */
   .divider.soft {
-    background: var(--line-soft);
+    background: var(--rule-soft);
   }
 
   .divider.strong {
-    background: var(--line-strong);
+    background: var(--rule-strong);
   }
 
   /* Horizontal orientation */

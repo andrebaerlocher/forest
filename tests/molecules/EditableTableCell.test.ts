@@ -1,6 +1,6 @@
-import { tick, unmount } from "svelte";
+import { mount, tick, unmount } from "svelte";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { mountComponent } from "../../test-support/test-component-loader.js";
+import EditableTableCell from "$lib/molecules/EditableTableCell.svelte";
 
 describe("EditableTableCell genuine Svelte 5 component interaction tests", () => {
   let table: HTMLTableElement;
@@ -20,7 +20,7 @@ describe("EditableTableCell genuine Svelte 5 component interaction tests", () =>
   });
 
   it("renders cell static content when not in editing state", async () => {
-    const instance = await mountComponent("src/lib/molecules/EditableTableCell.svelte", {
+    const instance = mount(EditableTableCell, {
       target: tr,
       props: {
         value: "Alpha",
@@ -38,7 +38,7 @@ describe("EditableTableCell genuine Svelte 5 component interaction tests", () =>
   });
 
   it("enters edit mode on double click and renders inline input for text type", async () => {
-    const instance = await mountComponent("src/lib/molecules/EditableTableCell.svelte", {
+    const instance = mount(EditableTableCell, {
       target: tr,
       props: {
         value: "Initial Value",
@@ -63,7 +63,7 @@ describe("EditableTableCell genuine Svelte 5 component interaction tests", () =>
   it("commits updated value when Enter key is pressed during editing", async () => {
     const cellValue = "Original";
 
-    const instance = await mountComponent("src/lib/molecules/EditableTableCell.svelte", {
+    const instance = mount(EditableTableCell, {
       target: tr,
       props: {
         value: cellValue,
@@ -90,7 +90,7 @@ describe("EditableTableCell genuine Svelte 5 component interaction tests", () =>
   });
 
   it("reverts value when Escape key is pressed during editing", async () => {
-    const instance = await mountComponent("src/lib/molecules/EditableTableCell.svelte", {
+    const instance = mount(EditableTableCell, {
       target: tr,
       props: {
         value: "Kept Value",
@@ -116,7 +116,7 @@ describe("EditableTableCell genuine Svelte 5 component interaction tests", () =>
   });
 
   it("renders split numeric inputs for numeric cell type in edit mode", async () => {
-    const instance = await mountComponent("src/lib/molecules/EditableTableCell.svelte", {
+    const instance = mount(EditableTableCell, {
       target: tr,
       props: {
         value: 123.45,
@@ -140,8 +140,4 @@ describe("EditableTableCell genuine Svelte 5 component interaction tests", () =>
 
     unmount(instance);
   });
-
-  function containerText(el: HTMLElement) {
-    return el.textContent?.trim() || "";
-  }
 });

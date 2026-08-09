@@ -21,22 +21,22 @@ This handbook details the tech stack, critical commands, and guidelines for the 
 ## Critical Commands
 
 ### Setup & Run
-- **Install dependencies**: `npm install`
-- **Run dev preview app**: `npm run dev`
-- **Run Storybook environment**: `npm run storybook`
+- **Install dependencies**: `bun install`
+- **Run dev preview app**: `bun run dev`
+- **Run Storybook environment**: `bun run storybook`
 
 ### Build & Package
-- **Build SvelteKit app**: `npm run build`
-- **Package library (compile src/lib -> dist)**: `npm run prepack` (runs svelte-package + publint)
+- **Build SvelteKit app**: `bun run build`
+- **Package library (compile src/lib -> dist)**: `bun run prepack` (runs svelte-package + publint)
 
 ### Checks & Testing
-- **Unified diagnostics**: `npm run diagnose` (runs all checks and outputs `diagnostics_report.md`)
-- **Lint & format check**: `npm run lint` (`biome check src`)
-- **Auto-format code**: `npm run format` (`biome format --write src`)
-- **Svelte Native type check**: `npm run check:native` (`svelte-check-native --workspace .`)
-- **Svelte Doctor check**: `npm run check:doctor` (`svelte-doctor check`)
-- **Copy-Paste detection**: `npm run check:cpd` (`jscpd src/lib`)
-- **Unit & Storybook tests**: `npm run test` or `vitest`
+- **Unified diagnostics**: `bun run diagnose` (runs all checks and outputs `diagnostics_report.md`)
+- **Lint & format check**: `bun run lint` (`biome check src`)
+- **Auto-format code**: `bun run format` (`biome format --write src`)
+- **Svelte Native type check**: `bun run check:native` (`svelte-check-native --workspace .`)
+- **Svelte Doctor check**: `bun run check:doctor` (`svelte-doctor check`)
+- **Copy-Paste detection**: `bun run check:cpd` (`jscpd src/lib`)
+- **Unit & Storybook tests**: `bun test` or `bun run test`
 
 ---
 

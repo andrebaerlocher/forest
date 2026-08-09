@@ -1,6 +1,6 @@
-import { tick, unmount } from "svelte";
+import { mount, tick, unmount } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mountComponent } from "../../test-support/test-component-loader.js";
+import CommandPalette from "$lib/organisms/CommandPalette.svelte";
 
 const sampleCommands = [
   { id: "new-file", label: "Create New File", shortcut: "⌘N" },
@@ -23,7 +23,7 @@ describe("CommandPalette genuine Svelte 5 component interaction tests", () => {
   });
 
   it("does not render palette DOM when open is false", async () => {
-    const instance = await mountComponent("src/lib/organisms/CommandPalette.svelte", {
+    const instance = mount(CommandPalette, {
       target: container,
       props: {
         open: false,
@@ -36,7 +36,7 @@ describe("CommandPalette genuine Svelte 5 component interaction tests", () => {
   });
 
   it("renders palette panel and filters commands on search input when open is true", async () => {
-    const instance = await mountComponent("src/lib/organisms/CommandPalette.svelte", {
+    const instance = mount(CommandPalette, {
       target: container,
       props: {
         open: true,
@@ -66,7 +66,7 @@ describe("CommandPalette genuine Svelte 5 component interaction tests", () => {
   });
 
   it("handles keyboard navigation with ArrowDown and ArrowUp", async () => {
-    const instance = await mountComponent("src/lib/organisms/CommandPalette.svelte", {
+    const instance = mount(CommandPalette, {
       target: container,
       props: {
         open: true,
@@ -77,20 +77,29 @@ describe("CommandPalette genuine Svelte 5 component interaction tests", () => {
     const panel = container.querySelector<HTMLElement>(".palette-panel");
     expect(panel).not.toBeNull();
 
+    const input = container.querySelector<HTMLInputElement>("input.palette-input");
+    expect(input).not.toBeNull();
+
     let items = container.querySelectorAll(".command-item");
     expect(items[0].classList.contains("highlighted")).toBe(true);
 
-    panel!.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true }));
+    panel!.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowDown", bubbles: true, cancelable: true }),
+    );
     await tick();
 
     items = container.querySelectorAll(".command-item");
-    expect(items[1].classList.contains("highlighted")).toBe(true);
+    const activeIndex1 = Array.from(items).findIndex((el) => el.classList.contains("highlighted"));
+    expect(activeIndex1).toBe(1);
 
-    panel!.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true }));
+    panel!.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "ArrowUp", bubbles: true, cancelable: true }),
+    );
     await tick();
 
     items = container.querySelectorAll(".command-item");
-    expect(items[0].classList.contains("highlighted")).toBe(true);
+    const activeIndex0 = Array.from(items).findIndex((el) => el.classList.contains("highlighted"));
+    expect(activeIndex0).toBe(0);
 
     unmount(instance);
   });
@@ -99,7 +108,7 @@ describe("CommandPalette genuine Svelte 5 component interaction tests", () => {
     const onselect = vi.fn();
     const onclose = vi.fn();
 
-    const instance = await mountComponent("src/lib/organisms/CommandPalette.svelte", {
+    const instance = mount(CommandPalette, {
       target: container,
       props: {
         open: true,
@@ -124,7 +133,7 @@ describe("CommandPalette genuine Svelte 5 component interaction tests", () => {
   it("triggers onclose callback on Escape keypress", async () => {
     const onclose = vi.fn();
 
-    const instance = await mountComponent("src/lib/organisms/CommandPalette.svelte", {
+    const instance = mount(CommandPalette, {
       target: container,
       props: {
         open: true,

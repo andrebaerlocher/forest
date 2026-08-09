@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { Snippet } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
+    import { fly } from 'svelte/transition';
   import { useTocRegistry } from '../caseStudyToc.svelte.js';
   import { type HeadingLevel, useHeadingLevel } from '../headingLevel.js';
 
@@ -16,6 +17,8 @@
     unlisted?: boolean;
     class?: string;
     children?: Snippet;
+    startsClosed?: boolean;
+    canCollapse?: boolean;
   }
 
   let {
@@ -26,6 +29,8 @@
     unlisted = false,
     class: className = '',
     children,
+    startsClosed = false,
+    canCollapse = false,
     ...restProps
   }: Props = $props();
 
@@ -43,6 +48,9 @@
     if (unlisted || !toc || !node) return;
     return toc.register({ id, label: title, level: resolvedLevel }, node);
   });
+
+  let isOpen = $derived(!startsClosed);
+
 </script>
 
 <section
@@ -53,15 +61,23 @@
   {...restProps}
 >
   <svelte:element
+    onclick={() => isOpen = canCollapse ? !isOpen : true}
+    role="button"
+    tabindex="0"
     this={`h${resolvedLevel}`}
     id="{id}-heading"
     class="cs-section-title level-{resolvedLevel}"
+    style:cursor={canCollapse ? 'pointer' : 'default'}
   >
-    {#if number !== undefined}<span class="cs-section-number">{number}</span>{/if}{title}
+    {#if number !== undefined}<span class="cs-section-number">{number}</span>{/if}{title} {#if canCollapse && !isOpen}
+      <span class="cs-section-trigger">anzeigen</span>
+      {:else if canCollapse && isOpen}
+      <span class="cs-section-trigger">verbergen</span>
+    {/if}
   </svelte:element>
 
-  {#if children}
-    <div class="cs-section-body">
+  {#if children && isOpen}
+    <div class="cs-section-body" transition:fly={{duration: 300, y: -10}}>
       {@render children()}
     </div>
   {/if}
@@ -77,6 +93,7 @@
   }
 
   .cs-section-title {
+    position: relative;
     margin: 0;
     color: var(--text-1);
     line-height: 1.3;
@@ -105,13 +122,41 @@
     color: var(--text-2);
   }
 
+  /* Fixed size and a fixed-width, gutter-anchored box — independent of the
+     heading's own font-size — so "01" beside an h2 and "01.01" beside an h3
+     land in the same aligned column instead of drifting with heading level. */
   .cs-section-number {
+    position: absolute;
+    left: calc(-1 * var(--cs-gutter, 96px));
+    width: calc(var(--cs-gutter, 96px) - 12px);
+    top: 0.3em;
+    line-height: inherit;
     font-family: var(--font-num);
     font-variant-numeric: tabular-nums;
-    font-size: 0.72em;
-    letter-spacing: 0.08em;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-align: right;
     color: var(--accent-ink);
-    margin-right: 0.7em;
+    white-space: nowrap;
+  }
+
+  .cs-section-trigger {
+    font-family: var(--font-num);
+    font-weight: 100;
+    letter-spacing: 0.06em;
+    color: var(--accent-ink);
+    white-space: nowrap;
+  }
+
+  @media (max-width: 600px) {
+    .cs-section-number {
+      position: static;
+      display: block;
+      width: auto;
+      text-align: left;
+      margin-bottom: 2px;
+    }
   }
 
   .cs-section-body {

@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { setupDOM } from "../../test-support/test-dom.ts";
-import { scrollspy } from "./scrollspy.js";
+import { scrollspy } from "$lib/actions/scrollspy.js";
+import { setupDOM } from "../../src/test-support/test-dom.ts";
 
 setupDOM();
 
@@ -61,7 +61,7 @@ describe("scrollspy action", () => {
   });
 
   afterEach(() => {
-    (document.body as unknown as { childNodes: unknown[] }).childNodes = [];
+    document.body.replaceChildren();
     vi.restoreAllMocks();
   });
 

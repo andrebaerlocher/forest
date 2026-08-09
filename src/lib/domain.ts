@@ -178,7 +178,13 @@ export interface RejectedAlternative {
 }
 
 /** Lifecycle of an architecture decision record. */
-export type DecisionStatus = "proposed" | "accepted" | "superseded" | "deprecated";
+export type DecisionStatus =
+  | "proposed"
+  | "accepted"
+  | "final"
+  | "rejected"
+  | "superseded"
+  | "deprecated";
 
 /** One card in a case study index. */
 export interface CaseStudySummaryData {

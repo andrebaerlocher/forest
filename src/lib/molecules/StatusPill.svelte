@@ -4,6 +4,7 @@
 
   interface Props extends HTMLAttributes<HTMLSpanElement> {
     status?: 'neutral' | 'success' | 'warning' | 'danger';
+    variant?: 'solid' | 'dashed' | 'strong';
     label?: string;
     /** Hide the dot and set the label in status ink alone */
     bare?: boolean;
@@ -13,6 +14,7 @@
 
   let {
     status = 'neutral',
+    variant = 'solid',
     label = '',
     bare = false,
     class: className = '',
@@ -22,7 +24,7 @@
 </script>
 
 <!-- Status as ink, never paint: a dot, a hairline and text — no filled tint. -->
-<span class="status-pill status-{status} {className}" class:bare {...restProps}>
+<span class="status-pill status-{status} variant-{variant} {className}" class:bare {...restProps}>
   {#if !bare}
     <i class="dot" aria-hidden="true"></i>
   {/if}
@@ -49,6 +51,15 @@
     border-radius: var(--radius-round);
     background: transparent;
     color: var(--text-2);
+  }
+
+  .status-pill.variant-dashed {
+    border-style: dashed;
+  }
+
+  .status-pill.variant-strong {
+    border-width: 1.5px;
+    font-weight: 600;
   }
 
   .status-pill.bare {

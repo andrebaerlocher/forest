@@ -1,6 +1,7 @@
 /// <reference types="vitest/config" />
-import { defineConfig } from 'vitest/config';
-import { svelte } from '@sveltejs/vite-plugin-svelte';
+import path from "node:path";
+import { defineConfig } from "vitest/config";
+import { svelte } from "@sveltejs/vite-plugin-svelte";
 
 export default defineConfig({
   plugins: [
@@ -10,10 +11,15 @@ export default defineConfig({
       },
     }),
   ],
+  resolve: {
+    conditions: ["browser"],
+    alias: {
+      $lib: path.resolve(__dirname, "./src/lib"),
+    },
+  },
   test: {
-    environment: 'jsdom',
-    setupFiles: ['./src/test-setup.ts'],
-    include: ['src/**/*.test.ts', 'src/**/*.spec.ts'],
+    environment: "jsdom",
+    setupFiles: ["./src/test-setup.ts"],
+    include: ["tests/**/*.test.{ts,js,svelte.ts}", "src/**/*.test.{ts,js,svelte.ts}"],
   },
 });
-

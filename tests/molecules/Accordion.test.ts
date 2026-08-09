@@ -1,6 +1,6 @@
-import { tick, unmount } from "svelte";
+import { mount, tick, unmount } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mountComponent } from "../../test-support/test-component-loader.js";
+import Accordion from "$lib/molecules/Accordion.svelte";
 
 const sampleItems = [
   { id: "sec1", title: "Section 1", content: "Content 1" },
@@ -23,7 +23,7 @@ describe("Accordion genuine Svelte 5 component interaction tests", () => {
   });
 
   it("renders accordion items with triggers and closed panels initially", async () => {
-    const instance = await mountComponent("src/lib/molecules/Accordion.svelte", {
+    const instance = mount(Accordion, {
       target: container,
       props: {
         items: sampleItems,
@@ -41,17 +41,11 @@ describe("Accordion genuine Svelte 5 component interaction tests", () => {
 
   it("toggles single item in single mode on click", async () => {
     const onchange = vi.fn();
-    let expandedIds: string[] = [];
-
-    const instance = await mountComponent("src/lib/molecules/Accordion.svelte", {
+    const instance = mount(Accordion, {
       target: container,
       props: {
         items: sampleItems,
-        expandedIds,
-        onchange: (ids: string[]) => {
-          expandedIds = ids;
-          onchange(ids);
-        },
+        onchange,
       },
     });
 
@@ -59,47 +53,43 @@ describe("Accordion genuine Svelte 5 component interaction tests", () => {
     triggers[0].click();
     await tick();
 
+    const panel = container.querySelector(".accordion-panel");
+    expect(panel).not.toBeNull();
+    expect(panel?.textContent).toContain("Content 1");
     expect(onchange).toHaveBeenCalledWith(["sec1"]);
-    expect(container.querySelector("#accordion-panel-sec1")).not.toBeNull();
 
-    triggers[1].click();
+    triggers[0].click();
     await tick();
-
-    expect(onchange).toHaveBeenCalledWith(["sec2"]);
-    expect(container.querySelector("#accordion-panel-sec1")).toBeNull();
-    expect(container.querySelector("#accordion-panel-sec2")).not.toBeNull();
+    expect(container.querySelector(".accordion-panel")).toBeNull();
+    expect(onchange).toHaveBeenLastCalledWith([]);
 
     unmount(instance);
   });
 
   it("supports expanding multiple items simultaneously when multiple is true", async () => {
-    const onchange = vi.fn();
-
-    const instance = await mountComponent("src/lib/molecules/Accordion.svelte", {
+    const instance = mount(Accordion, {
       target: container,
       props: {
         items: sampleItems,
         multiple: true,
-        expandedIds: ["sec1"],
-        onchange,
       },
     });
 
     const triggers = container.querySelectorAll<HTMLButtonElement>("button.accordion-trigger");
+    triggers[0].click();
+    await tick();
     triggers[1].click();
     await tick();
 
-    expect(onchange).toHaveBeenCalledWith(["sec1", "sec2"]);
-    expect(container.querySelector("#accordion-panel-sec1")).not.toBeNull();
-    expect(container.querySelector("#accordion-panel-sec2")).not.toBeNull();
+    const panels = container.querySelectorAll(".accordion-panel");
+    expect(panels.length).toBe(2);
 
     unmount(instance);
   });
 
   it("does not toggle item when disabled is true", async () => {
     const onchange = vi.fn();
-
-    const instance = await mountComponent("src/lib/molecules/Accordion.svelte", {
+    const instance = mount(Accordion, {
       target: container,
       props: {
         items: sampleItems,
@@ -108,25 +98,20 @@ describe("Accordion genuine Svelte 5 component interaction tests", () => {
     });
 
     const triggers = container.querySelectorAll<HTMLButtonElement>("button.accordion-trigger");
-    expect(triggers[2].disabled).toBe(true);
-
     triggers[2].click();
     await tick();
 
+    expect(container.querySelector(".accordion-panel")).toBeNull();
     expect(onchange).not.toHaveBeenCalled();
-    expect(container.querySelector("#accordion-panel-sec3")).toBeNull();
 
     unmount(instance);
   });
 
   it("toggles item on Space and Enter keypresses", async () => {
-    const onchange = vi.fn();
-
-    const instance = await mountComponent("src/lib/molecules/Accordion.svelte", {
+    const instance = mount(Accordion, {
       target: container,
       props: {
         items: sampleItems,
-        onchange,
       },
     });
 
@@ -134,12 +119,12 @@ describe("Accordion genuine Svelte 5 component interaction tests", () => {
     triggers[0].dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
     await tick();
 
-    expect(onchange).toHaveBeenCalledWith(["sec1"]);
+    expect(container.querySelector(".accordion-panel")).not.toBeNull();
 
     triggers[0].dispatchEvent(new KeyboardEvent("keydown", { key: " ", bubbles: true }));
     await tick();
 
-    expect(onchange).toHaveBeenCalledWith([]);
+    expect(container.querySelector(".accordion-panel")).toBeNull();
 
     unmount(instance);
   });

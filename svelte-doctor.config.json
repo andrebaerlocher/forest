@@ -16,7 +16,8 @@
       "no-unsafe-shell",
       "no-style-tag-props",
       "missing-error-page",
-      "no-console"
+      "no-console",
+      "no-unsafe-html"
     ]
   }
 }

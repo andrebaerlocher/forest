@@ -48,8 +48,22 @@ export function scrollspy(node: HTMLElement, options: ScrollspyOptions) {
   }
 
   function emit() {
-    // `ids` is in document order, so the first visible one is the topmost.
-    const active = ids.find((id) => visible.has(id)) ?? fallbackActive();
+    // A Section that contains nested Sections (e.g. a "Decisions" chapter
+    // wrapping each decision record) is visible for its entire span, so it
+    // would otherwise always win — it's document-order-first and intersects
+    // whenever any of its children do. Drop any visible id whose element
+    // contains another visible id's element, leaving only the most specific
+    // (innermost) candidates, then take the topmost of those.
+    const visibleIds = ids.filter((id) => visible.has(id));
+    const specific = visibleIds.filter((id) => {
+      const el = doc.getElementById(id);
+      return !visibleIds.some((otherId) => {
+        if (otherId === id) return false;
+        const otherEl = doc.getElementById(otherId);
+        return !!el && !!otherEl && el.contains(otherEl);
+      });
+    });
+    const active = specific[0] ?? fallbackActive();
     onchange(active);
   }
 

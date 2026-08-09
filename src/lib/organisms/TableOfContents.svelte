@@ -106,10 +106,18 @@
   .cs-toc-link {
     display: block;
     /* The indicator border is always present so becoming active never nudges
-       the label sideways. */
+       the label sideways. Wider per-depth step and a size/weight taper echo
+       TreeView's hierarchy language — deeper entries read as subordinate at a
+       glance instead of just being nudged a few pixels right. */
     border-left: 1.5px solid var(--line-soft);
-    padding: 5px 10px 5px calc(10px + var(--toc-depth, 0) * 12px);
-    font-size: 12.5px;
+    /* Spine.svelte's global `:global(nav a)` leaks a left-rounded corner onto
+       every <a> inside any <nav> app-wide (this component included, since
+       it's a landmark nav) — override it explicitly, since a rounded pill
+       behind a straight rule line reads as two conflicting metaphors. */
+    border-radius: 0;
+    padding: 5px 10px 5px calc(10px + var(--toc-depth, 0) * 16px);
+    font-size: calc(13px - var(--toc-depth, 0) * 0.5px);
+    font-weight: calc(600 - var(--toc-depth, 0) * 100);
     line-height: 1.4;
     color: var(--text-3);
     text-decoration: none;

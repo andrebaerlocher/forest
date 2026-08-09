@@ -1,7 +1,6 @@
-import { tick, unmount } from "svelte";
+import { mount, tick, unmount } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mountComponent } from "../../test-support/test-component-loader.js";
-import type { TreeNodeData } from "./TreeView.svelte";
+import TreeView, { type TreeNodeData } from "$lib/organisms/TreeView.svelte";
 
 const sampleNodes = [
   {
@@ -33,7 +32,7 @@ describe("TreeView genuine Svelte 5 component interaction tests", () => {
   });
 
   it("renders root tree structure with correct ARIA roles and labels", async () => {
-    const instance = await mountComponent("src/lib/organisms/TreeView.svelte", {
+    const instance = mount(TreeView, {
       target: container,
       props: {
         nodes: sampleNodes,
@@ -55,7 +54,7 @@ describe("TreeView genuine Svelte 5 component interaction tests", () => {
   it("expands nested child nodes when toggle button is clicked", async () => {
     const ontoggle = vi.fn();
 
-    const instance = await mountComponent("src/lib/organisms/TreeView.svelte", {
+    const instance = mount(TreeView, {
       target: container,
       props: {
         nodes: sampleNodes,
@@ -84,7 +83,7 @@ describe("TreeView genuine Svelte 5 component interaction tests", () => {
     const onselect = vi.fn();
     let selectedId = null;
 
-    const instance = await mountComponent("src/lib/organisms/TreeView.svelte", {
+    const instance = mount(TreeView, {
       target: container,
       props: {
         nodes: sampleNodes,
@@ -110,7 +109,7 @@ describe("TreeView genuine Svelte 5 component interaction tests", () => {
   });
 
   it("manages roving tabindex (tabindex 0 for active node, -1 for inactive nodes)", async () => {
-    const instance = await mountComponent("src/lib/organisms/TreeView.svelte", {
+    const instance = mount(TreeView, {
       target: container,
       props: {
         nodes: sampleNodes,
@@ -128,7 +127,7 @@ describe("TreeView genuine Svelte 5 component interaction tests", () => {
   });
 
   it("navigates down and up tree nodes with ArrowDown and ArrowUp keypresses", async () => {
-    const instance = await mountComponent("src/lib/organisms/TreeView.svelte", {
+    const instance = mount(TreeView, {
       target: container,
       props: {
         nodes: sampleNodes,

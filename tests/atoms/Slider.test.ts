@@ -1,32 +1,6 @@
-import fs from "node:fs";
-import path from "node:path";
 import { mount, unmount } from "svelte";
-import { compile } from "svelte/compiler";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-const componentCache = new Map<string, unknown>();
-
-async function mountComponent(
-  relativePath: string,
-  options: { target: HTMLElement; props?: Record<string, unknown> },
-) {
-  let Component = componentCache.get(relativePath);
-  if (!Component) {
-    const absPath = path.resolve(relativePath);
-    const code = fs.readFileSync(absPath, "utf8");
-    const compiled = compile(code, {
-      filename: absPath,
-      generate: "client",
-      dev: false,
-    });
-    const blob = new Blob([compiled.js.code], { type: "application/javascript" });
-    const url = URL.createObjectURL(blob);
-    const mod = await import(url);
-    Component = mod.default;
-    componentCache.set(relativePath, Component);
-  }
-  return mount(Component as Parameters<typeof mount>[0], options as Parameters<typeof mount>[1]);
-}
+import Slider from "$lib/atoms/Slider.svelte";
 
 describe("Slider component tests", () => {
   let container: HTMLDivElement;
@@ -43,7 +17,7 @@ describe("Slider component tests", () => {
   });
 
   it("connects label and input with matching id and for attributes when label is provided", async () => {
-    const instance = await mountComponent("src/lib/atoms/Slider.svelte", {
+    const instance = mount(Slider, {
       target: container,
       props: {
         id: "custom-slider",
@@ -66,7 +40,7 @@ describe("Slider component tests", () => {
   });
 
   it("generates deterministic unique auto id when id prop is omitted", async () => {
-    const instance1 = await mountComponent("src/lib/atoms/Slider.svelte", {
+    const instance1 = mount(Slider, {
       target: container,
       props: { label: "Slider 1" },
     });
@@ -77,7 +51,7 @@ describe("Slider component tests", () => {
 
     unmount(instance1);
 
-    const instance2 = await mountComponent("src/lib/atoms/Slider.svelte", {
+    const instance2 = mount(Slider, {
       target: container,
       props: { label: "Slider 2" },
     });
@@ -92,7 +66,7 @@ describe("Slider component tests", () => {
   });
 
   it("forwards aria-label and custom aria-labelledby correctly", async () => {
-    const instance = await mountComponent("src/lib/atoms/Slider.svelte", {
+    const instance = mount(Slider, {
       target: container,
       props: {
         "aria-label": "Brightness",
@@ -110,7 +84,7 @@ describe("Slider component tests", () => {
 
   it("updates value and triggers onchange handler when range input changes", async () => {
     const onchange = vi.fn();
-    const instance = await mountComponent("src/lib/atoms/Slider.svelte", {
+    const instance = mount(Slider, {
       target: container,
       props: {
         value: 10,
@@ -132,7 +106,7 @@ describe("Slider component tests", () => {
   });
 
   it("respects disabled state", async () => {
-    const instance = await mountComponent("src/lib/atoms/Slider.svelte", {
+    const instance = mount(Slider, {
       target: container,
       props: {
         disabled: true,

@@ -1,0 +1,28 @@
+{
+  "surreal_db_address": "127.0.0.1:8000",
+  "surreal_db_username": "root",
+  "surreal_db_password": "root",
+  "biome_path": "biome",
+  "enable_biome": true,
+  "enable_eslint": false,
+  "enable_knip": false,
+  "enable_doctor": false,
+  "enable_check_rs": false,
+  "last_project_path": null,
+  "last_active_card_titles": [],
+  "theme_name": "Willow Dream",
+  "icon_theme": "Catppuccin",
+  "editor_font_size": 14.0,
+  "editor_line_height": 22.0,
+  "editor_line_wrap": true,
+  "card_font_size": 14.0,
+  "card_line_height": 20.0,
+  "card_line_wrap": true,
+  "llm": {
+    "provider": "Gemini",
+    "api_key": "",
+    "base_url": "https://generativelanguage.googleapis.com",
+    "model_name": "gemini-1.5-pro",
+    "temperature": 0.2
+  }
+}

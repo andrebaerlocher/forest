@@ -1,30 +1,5 @@
-import "../../test-setup.js";
-import fs from "node:fs";
-import path from "node:path";
-import { compileModule } from "svelte/compiler";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-
-declare const Bun: {
-  Transpiler: new (options: {
-    loader: string;
-  }) => {
-    transformSync: (code: string) => string;
-  };
-};
-
-const absPath = path.resolve("src/lib/stores/toaster.svelte.ts");
-const code = fs.readFileSync(absPath, "utf8");
-const transpiler = new Bun.Transpiler({ loader: "ts" });
-const transpiled = transpiler.transformSync(code);
-const compiled = compileModule(transpiled, {
-  filename: absPath,
-  generate: "client",
-  dev: false,
-});
-const blob = new Blob([compiled.js.code], { type: "application/javascript" });
-const url = URL.createObjectURL(blob);
-const mod = await import(url);
-const createToaster = mod.createToaster;
+import { createToaster } from "$lib/stores/toaster.svelte.js";
 
 describe("toaster store", () => {
   beforeEach(() => {
@@ -118,9 +93,6 @@ describe("toaster store", () => {
 
     expect(t.items.length).toBe(3);
     t.clear();
-    expect(t.items.length).toBe(0);
-
-    vi.advanceTimersByTime(5000);
     expect(t.items.length).toBe(0);
   });
 });

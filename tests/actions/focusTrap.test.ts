@@ -1,6 +1,6 @@
-import "../../test-setup.js";
+import "../../src/test-setup.js";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { focusTrap } from "./focusTrap.js";
+import { focusTrap } from "$lib/actions/focusTrap.js";
 
 describe("focusTrap action", () => {
   let container: HTMLDivElement;

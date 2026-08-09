@@ -30,9 +30,12 @@
 <style>
   .stack-manifest {
     display: grid;
-    grid-template-columns: minmax(120px, 160px) 1fr;
-    gap: 16px;
-    margin: 0;
+    grid-template-columns: var(--cs-gutter, 160px) 1fr;
+    /* Pulled back by the same amount its own label column reserves, so that
+       column lands in the page's shared orientation gutter (alongside Section
+       numbers) instead of floating wherever this widget happens to sit. */
+    margin-left: calc(-1 * var(--cs-gutter, 160px));
+    row-gap: 16px;
   }
 
   .category {
@@ -42,6 +45,8 @@
     color: var(--text-3);
     font-weight: 600;
     margin: 0;
+    padding-right: 12px;
+    text-align: right;
   }
 
   .items {
@@ -68,10 +73,13 @@
       display: flex;
       flex-direction: column;
       gap: 8px;
+      margin-left: 0;
     }
 
     .category {
       margin-bottom: -4px;
+      padding-right: 0;
+      text-align: left;
     }
   }
 </style>

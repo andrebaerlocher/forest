@@ -26,7 +26,7 @@
 <script lang="ts" generics="T = unknown">
   import { getContext, type Snippet, setContext, tick } from 'svelte';
   import type { HTMLAttributes } from 'svelte/elements';
-  import TreeView from "./TreeView.svelte";
+  import Self from './TreeView.svelte';
 
   interface Props extends Omit<HTMLAttributes<HTMLUListElement>, 'onselect' | 'ontoggle'> {
     nodes?: TreeNodeData<T>[];
@@ -207,23 +207,20 @@
     getRootNodes: () => nodes,
   };
 
-  let isRootNode = $derived(level === 0);
-  $effect(() => {
-    if (isRootNode) {
-      setContext(TREE_CONTEXT_KEY, rootCtx);
-    }
-  });
+  if (level === 0) {
+    setContext(TREE_CONTEXT_KEY, rootCtx);
+  }
 
-  const ctx: TreeContext<T> = $derived(isRootNode ? rootCtx : getContext<TreeContext<T>>(TREE_CONTEXT_KEY));
+  const ctx: TreeContext<T> = level === 0 ? rootCtx : getContext<TreeContext<T>>(TREE_CONTEXT_KEY);
 
   $effect(() => {
-    if (isRootNode && selectedId && activeNodeId !== selectedId) {
+    if (level === 0 && selectedId && activeNodeId !== selectedId) {
       activeNodeId = selectedId;
     }
   });
 
   $effect(() => {
-    if (isRootNode && !activeNodeId && nodes.length > 0) {
+    if (level === 0 && !activeNodeId && nodes.length > 0) {
       activeNodeId = selectedId ?? nodes[0].id;
     }
   });
@@ -301,7 +298,7 @@
       </div>
 
       {#if hasChildren && nodeOpen && node.children}
-        <TreeView
+        <Self
           nodes={node.children}
           bind:selectedId
           bind:activeNodeId

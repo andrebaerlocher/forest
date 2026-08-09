@@ -1,7 +1,7 @@
-import { tick, unmount } from "svelte";
+import { mount, tick, unmount } from "svelte";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { mountComponent } from "../../test-support/test-component-loader.js";
-import type { ComboItem } from "../domain.js";
+import type { ComboItem } from "$lib/domain.js";
+import Combobox from "$lib/molecules/Combobox.svelte";
 
 const sampleItems = [
   { id: "u1", label: "Ada Fen", meta: "Sales" },
@@ -24,7 +24,7 @@ describe("Combobox genuine Svelte 5 component interaction tests", () => {
   });
 
   it("filters items in DOM list matching label or meta on user typing input", async () => {
-    const instance = await mountComponent("src/lib/molecules/Combobox.svelte", {
+    const instance = mount(Combobox, {
       target: container,
       props: {
         items: sampleItems,
@@ -51,7 +51,7 @@ describe("Combobox genuine Svelte 5 component interaction tests", () => {
   });
 
   it("handles ArrowDown and ArrowUp keyboard navigation and active descendant update", async () => {
-    const instance = await mountComponent("src/lib/molecules/Combobox.svelte", {
+    const instance = mount(Combobox, {
       target: container,
       props: {
         items: sampleItems,
@@ -86,7 +86,7 @@ describe("Combobox genuine Svelte 5 component interaction tests", () => {
     const onchange = vi.fn();
     let currentVal = null;
 
-    const instance = await mountComponent("src/lib/molecules/Combobox.svelte", {
+    const instance = mount(Combobox, {
       target: container,
       props: {
         items: sampleItems,
@@ -113,7 +113,7 @@ describe("Combobox genuine Svelte 5 component interaction tests", () => {
   });
 
   it("closes option list on Escape keypress", async () => {
-    const instance = await mountComponent("src/lib/molecules/Combobox.svelte", {
+    const instance = mount(Combobox, {
       target: container,
       props: {
         items: sampleItems,
@@ -137,7 +137,7 @@ describe("Combobox genuine Svelte 5 component interaction tests", () => {
   it("clears selection when clear button is clicked in DOM", async () => {
     const onchange = vi.fn();
 
-    const instance = await mountComponent("src/lib/molecules/Combobox.svelte", {
+    const instance = mount(Combobox, {
       target: container,
       props: {
         items: sampleItems,

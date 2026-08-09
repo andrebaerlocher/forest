@@ -18,7 +18,7 @@ try {
 const checks = [
   {
     name: 'Biome Linter & Formatter',
-    cmd: 'npx @biomejs/biome check src',
+    cmd: 'npx @biomejs/biome check src tests',
     desc: 'Checks linting rules and code formatting'
   },
   {

@@ -11,6 +11,7 @@ export { default as Button } from "./atoms/Button.svelte";
 export { default as Checkbox } from "./atoms/Checkbox.svelte";
 export { default as Divider } from "./atoms/Divider.svelte";
 export { default as EmbossedContours } from "./atoms/EmbossedContours.svelte";
+export { default as FormattedText } from "./atoms/FormattedText.svelte";
 export { default as Input } from "./atoms/Input.svelte";
 export { default as Kbd } from "./atoms/Kbd.svelte";
 export { default as Link } from "./atoms/Link.svelte";

@@ -129,8 +129,14 @@
   .main {
     flex: 1;
     padding: 48px clamp(24px, 6vw, 88px) 96px;
-    max-width: 1020px;
+    max-width: 1600px;
     width: 100%;
+    margin: 0 auto;
+    /* Establishes a query context for descendants (e.g. CaseStudyShell) whose
+       breakpoints depend on their own available width, not the viewport — the
+       Spine rail's collapsed/expanded swing makes the viewport width alone an
+       unreliable signal. */
+    container-type: inline-size;
   }
 
   .main.no-pad {

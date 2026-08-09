@@ -28,7 +28,11 @@ export interface TocRegistry {
 }
 
 export function createTocRegistry(): TocRegistry {
-  const items: Registration[] = [];
+  // $state.raw, not $state: an item holds a live DOM node, and deep-proxying
+  // that (as plain $state would) sends Svelte's dev-mode tracking walking the
+  // node's own property graph. Raw state only tracks the array reference, so
+  // every mutation below reassigns rather than pushes/splices in place.
+  let items: Registration[] = $state.raw([]);
 
   return {
     get entries() {
@@ -42,10 +46,19 @@ export function createTocRegistry(): TocRegistry {
         .map((registration) => registration.entry);
     },
     register(entry, node) {
-      items.push({ entry, node });
+      // Deferred to a microtask, not written synchronously: a Section's own
+      // mount effect calls this, and writing shared $state from inside the
+      // very effect flush that's still settling re-enters Svelte's batch
+      // scheduler — harmless on a plain client mount, but during SSR
+      // hydration it never converges (each write re-dirties the flush that's
+      // still processing). Yielding a tick lets that flush finish first.
+      queueMicrotask(() => {
+        items = [...items, { entry, node }];
+      });
       return () => {
-        const index = items.findIndex((r) => r.entry.id === entry.id);
-        if (index !== -1) items.splice(index, 1);
+        queueMicrotask(() => {
+          items = items.filter((r) => r.entry.id !== entry.id);
+        });
       };
     },
   };

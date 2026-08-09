@@ -87,12 +87,6 @@ pub fn posterior(cache: &CohortCache, learner: LearnerId, skill: SkillId) -> f32
 }`
     }
   ];
-
-  const subsections = [
-    { id: 'rec-pipeline', label: 'Pipeline', level: 3 },
-    { id: 'rec-budget', label: 'Latency budget', level: 3 },
-    { id: 'rec-cache', label: 'The cache decision', level: 3 }
-  ];
 </script>
 
 {#snippet pipelineDiagram()}
@@ -160,9 +154,8 @@ pub fn posterior(cache: &CohortCache, learner: LearnerId, skill: SkillId) -> f32
     id="deepdive-recommender"
     title="Recommendation engine: next-best exercises in under 200µs"
     summary="Ranks the three next-best exercises from precomputed BKT and CbKST state, entirely off the request's network hot path."
-    {subsections}
   >
-    <Section id="rec-pipeline" title="Pipeline" unlisted>
+    <Section id="rec-pipeline" title="Pipeline">
       <Figure
         id="fig-pipeline"
         number={1}
@@ -173,7 +166,7 @@ pub fn posterior(cache: &CohortCache, learner: LearnerId, skill: SkillId) -> f32
       </Figure>
     </Section>
 
-    <Section id="rec-budget" title="Latency budget" unlisted>
+    <Section id="rec-budget" title="Latency budget">
       <BenchmarkTable
         rows={stageBudget}
         {total}
@@ -183,7 +176,7 @@ pub fn posterior(cache: &CohortCache, learner: LearnerId, skill: SkillId) -> f32
       />
     </Section>
 
-    <Section id="rec-cache" title="The cache decision" unlisted>
+    <Section id="rec-cache" title="The cache decision">
       <DecisionRecord
         id="adr-recommender-cache"
         title="In-process skill-state cache vs. a network KV lookup"
