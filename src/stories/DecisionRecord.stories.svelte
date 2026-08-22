@@ -130,3 +130,26 @@
     ]
   }}
 />
+
+<Story
+  name="Combined Gains, Costs and Neutral Consequences"
+  args={{
+    id: 'adr-005',
+    title: 'PostgreSQL vs. Polyglot Persistence',
+    status: 'accepted',
+    context: 'Ursprünglich war ein Polyglot-Persistence-Ansatz geplant. Für einen Solo-Backend-Entwickler bedeutet eine solche Architektur jedoch einen enormen operativen Overhead.',
+    decision: 'Reduktion auf **PostgreSQL** als Single-Source-of-Truth statt einer fragmentierten Multi-Datenbank-Architektur.',
+    gains: ['Massive Reduktion der operationalen Komplexität und der Infrastrukturkosten.'],
+    costs: ['Keine spezialisierte Graph-Abfragesprache out-of-the-box.'],
+    consequences: [
+      'Nutzung nativer Postgres-Features (JSONB/LTREE) reicht für aktuelle und mittelfristige Workloads völlig aus.',
+      'Definitive Validierung und Auslagerung einzelner Workloads erfolgt erst nach dediziertem Load-Testing in Produktion.'
+    ],
+    alternatives: [
+      {
+        option: 'Polyglot Persistence (Multi-DB)',
+        rejectedBecause: 'Der operative Aufwand für Wartung und Datensynchronisation stand in keinem wirtschaftlichen Verhältnis zum tatsächlichen Performance-Gewinn.'
+      }
+    ]
+  }}
+/>

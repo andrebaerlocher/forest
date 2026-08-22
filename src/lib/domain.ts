@@ -51,6 +51,19 @@ export interface MenuItemData {
   danger?: boolean;
 }
 
+/**
+ * A link in a Chain — one stage of an ordered pipeline (middleware, an
+ * interceptor chain, a request path). Unlike StepItem it carries no progress
+ * state: a chain describes what always runs, not where a reader has got to.
+ */
+export interface ChainStep {
+  label: string;
+  /** What this link does, in a handful of words. */
+  detail?: string;
+  /** Present for completeness, but not why this chain is on the page. */
+  muted?: boolean;
+}
+
 /** A stage in a Stepper flow. */
 export interface StepItem {
   id: string;

@@ -10,8 +10,7 @@
     status?: DecisionStatus;
     context: string;
     decision: string;
-    /** Undifferentiated consequences. Use `gains`/`costs` instead when the
-     *  entries actually split — a flat list hides which way each one cuts. */
+    /** Neutral consequences of the decision. Can be used standalone or alongside `gains`/`costs`. */
     consequences?: string[];
     /** What the decision buys. Rendered beside `costs`. */
     gains?: string[];
@@ -67,6 +66,7 @@
   let headingId = $derived(`${id}-heading`);
 
   let hasSplit = $derived((gains?.length ?? 0) > 0 || (costs?.length ?? 0) > 0);
+  let hasConsequences = $derived((consequences?.length ?? 0) > 0);
 </script>
 
 <section
@@ -117,6 +117,16 @@
             <p class="ledger-label cost">Dagegen</p>
             <ul class="ledger-list cost">
               {#each costs as item (item)}
+                <li><FormattedText text={item} /></li>
+              {/each}
+            </ul>
+          </div>
+        {/if}
+        {#if consequences && consequences.length > 0}
+          <div class="ledger-col">
+            <p class="ledger-label neutral">Neutral</p>
+            <ul class="ledger-list neutral">
+              {#each consequences as item (item)}
                 <li><FormattedText text={item} /></li>
               {/each}
             </ul>
@@ -233,6 +243,10 @@
     color: var(--warning);
   }
 
+  .ledger-label.neutral {
+    color: var(--text-3);
+  }
+
   .ledger-list {
     margin: 0;
     padding: 0;
@@ -255,7 +269,7 @@
     position: absolute;
     left: 0;
     font-family: var(--font-num);
-    /* The glyph is decoration; "Dafür"/"Dagegen" already carries the meaning. */
+    /* The glyph is decoration; "Dafür"/"Dagegen"/"Neutral" already carries the meaning. */
     speak: never;
   }
 
@@ -267,6 +281,11 @@
   .ledger-list.cost li::before {
     content: '−';
     color: var(--warning);
+  }
+
+  .ledger-list.neutral li::before {
+    content: '•';
+    color: var(--text-3);
   }
 
   .alternatives {

@@ -9,6 +9,7 @@
     provideHeadingLevel,
     useHeadingLevel
   } from '../headingLevel.js';
+    import Section from './Section.svelte';
 
   interface Props extends HTMLAttributes<HTMLElement> {
     /** Anchor target. This is the deep link readers will be sent. */
@@ -32,6 +33,8 @@
     class?: string;
     showLinks?: boolean;
     children?: Snippet;
+    sectionNumber?: number;
+    diveNumber?: number;
   }
 
   let {
@@ -45,6 +48,8 @@
     class: className = '',
     showLinks = false,
     children,
+    sectionNumber,
+    diveNumber,
     ...restProps
   }: Props = $props();
 
@@ -87,9 +92,13 @@
       <p class="cs-deepdive-eyebrow">{eyebrow}</p>
     {/if}
 
-    <svelte:element this={`h${resolvedLevel}`} id="{id}-heading" class="cs-deepdive-title">
+    <!-- <svelte:element this={`h${resolvedLevel}`} id="{id}-heading" class="cs-deepdive-title">
       {title}
-    </svelte:element>
+    </svelte:element> -->
+    <Section id={id} title={title} level={resolvedLevel} number={sectionNumber && diveNumber ?`${String(sectionNumber).padStart(2, '0')}.${String(diveNumber ?? 1).padStart(2, '0')}`: undefined}>
+      {title}
+
+    </Section>
 
     {#if summary}
       <p class="cs-deepdive-summary">{summary}</p>
@@ -158,7 +167,7 @@
     font-size: 14px;
     line-height: 1.6;
     color: var(--text-2);
-    max-width: 66ch;
+    /*max-width: 66ch;*/
   }
 
   .cs-deepdive-nav ul {

@@ -9,9 +9,10 @@
     text: string;
     class?: string;
     block?: boolean; // Render as block element with paragraph support
+    lang?: string;
   }
 
-  let { text, class: className = '', block = false, ...restProps }: Props = $props();
+  let { text, class: className = '', block = false, lang = 'de', ...restProps }: Props = $props();
 
   function renderMath(tex: string): string {
     try {
@@ -44,7 +45,7 @@
         <ol>
           {#each node.children ?? [] as item, idx (idx)}
             {#if item.type === 'list-item'}
-              <li>{@render renderInlineTokens(item.children ?? [])}</li>
+              <li>{@render renderListItem(item)}</li>
             {/if}
           {/each}
         </ol>
@@ -52,12 +53,19 @@
         <ul>
           {#each node.children ?? [] as item, idx (idx)}
             {#if item.type === 'list-item'}
-              <li>{@render renderInlineTokens(item.children ?? [])}</li>
+              <li>{@render renderListItem(item)}</li>
             {/if}
           {/each}
         </ul>
       {/if}
     {/if}
+  {/each}
+{/snippet}
+
+{#snippet renderListItem(item: InlineToken)}
+  {@render renderInlineTokens((item.children ?? []).filter((c) => c.type !== 'list'))}
+  {#each (item.children ?? []).filter((c) => c.type === 'list') as subList, subIdx (subIdx)}
+    {@render renderBlockTokens([subList])}
   {/each}
 {/snippet}
 
@@ -81,7 +89,7 @@
   {/each}
 {/snippet}
 
-<div class="formatted-text {className}" {...restProps}>
+<div class="formatted-text {className}" {lang} {...restProps}>
   {#if block}
     {@render renderBlockTokens(blockTokens[0])}
   {:else}
@@ -96,6 +104,10 @@
 
   .formatted-text :global(p) {
     margin: 0 0 0.618em 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
   }
 
   .formatted-text :global(p:last-child) {
@@ -108,17 +120,23 @@
     padding: 0;
   }
 
+  .formatted-text :global(li > ul),
+  .formatted-text :global(li > ol) {
+    margin-top: 0.25em;
+    margin-bottom: 0.25em;
+  }
+
   .formatted-text :global(ul:last-child),
   .formatted-text :global(ol:last-child) {
     margin-bottom: 0;
   }
 
   .formatted-text :global(li) {
-    margin-bottom: 0.25em;
-  }
-
-  .formatted-text :global(li) {
     margin: 0.309em 0;
+    overflow-wrap: break-word;
+    word-break: break-word;
+    hyphens: auto;
+    -webkit-hyphens: auto;
   }
 
   .formatted-text :global(strong) {
@@ -127,9 +145,10 @@
   }
 
   .inline-code {
-    display: inline-block;
-    hyphens: none;
-    -webkit-hyphens: none;
+    display: inline;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
+    overflow-wrap: break-word;
     font-family: var(--font-num);
     font-size: 0.9em;
     background: var(--wash);
@@ -140,7 +159,9 @@
   }
 
   .math {
-    display: inline-block;
+    display: inline;
+    box-decoration-break: clone;
+    -webkit-box-decoration-break: clone;
     color: var(--accent);
     font-family: var(--font-num);
   }

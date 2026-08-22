@@ -24,6 +24,14 @@
     toc?: TocEntry[];
     tocTitle?: string;
     heroVisualization?: Snippet;
+    /**
+     * Masthead facts — roles, timeline, team. Belongs in the header rather
+     * than at the top of the article: the header is full-bleed while the
+     * article is indented into the numbering gutter, so meta rendered as
+     * children lands on the body's left edge and reads as a stray indent
+     * rather than as part of the masthead.
+     */
+    meta?: Snippet;
     class?: string;
     children?: Snippet;
   }
@@ -36,6 +44,7 @@
     toc,
     tocTitle = 'Contents',
     heroVisualization,
+    meta,
     class: className = '',
     children,
     ...restProps
@@ -140,6 +149,12 @@
       {#if metrics.length > 0}
         <MetricGrid {metrics} />
       {/if}
+
+      {#if meta}
+        <div class="cs-meta">
+          {@render meta()}
+        </div>
+      {/if}
     </header>
 
     <article class="cs-article" bind:this={articleEl}>
@@ -174,12 +189,35 @@
     display: flex;
     flex-direction: column;
     gap: 28px;
+    /* Shared left margin used as an orientation gutter — Section numbers,
+       StackManifest's category labels and the masthead's meta labels all
+       anchor to this so they read as one page-wide wayfinding column instead
+       of unrelated local details. Declared here, on the common ancestor, so
+       the header's meta block and the article resolve the same value. */
+    --cs-gutter: 96px;
   }
 
+  /* The masthead deliberately ignores the article's numbering gutter and runs
+     full-bleed. Without a boundary that intent is unreadable — two left edges
+     on identical paper look like a mistake, not a zone — so the rule is what
+     turns the offset into a masthead. */
   .cs-header {
     display: flex;
     flex-direction: column;
     gap: 14px;
+    padding-bottom: 24px;
+    /*border-bottom: 1px solid var(--rule-soft);*/
+  }
+
+  /* Padded into the same gutter the article uses, so meta labels hang in the
+     wayfinding column and their values land on the body's left edge — the
+     masthead reads as full-bleed while still resolving to the page grid. */
+  .cs-meta {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 6px;
+    padding-left: var(--cs-gutter);
   }
 
   .cs-tag-row {
@@ -201,7 +239,7 @@
     font-size: 15px;
     line-height: 1.55;
     color: var(--text-2);
-    max-width: 62ch;
+    /*max-width: 62ch;*/
   }
 
   .cs-hero-vis {
@@ -212,17 +250,13 @@
     overflow: hidden;
   }
 
+  /* Reserved via padding so descendants can position into the gutter without
+     overflowing the grid track. */
   .cs-article {
     display: flex;
     flex-direction: column;
     gap: 40px;
     min-width: 0;
-    /* Shared left margin used as an orientation gutter — Section numbers and
-       StackManifest's category labels both anchor to this so they read as one
-       page-wide wayfinding column instead of unrelated local details. Reserved
-       via padding so descendants can position into it without overflowing the
-       grid track. */
-    --cs-gutter: 96px;
     padding-left: var(--cs-gutter);
   }
 
@@ -291,6 +325,7 @@
       grid-template-columns: minmax(0, 1fr) 232px;
       column-gap: 48px;
       align-items: start;
+      --cs-gutter: 140px;
     }
 
     /* Header and article become one grid item sharing a single row with the
@@ -303,10 +338,6 @@
       grid-column: 1;
       grid-row: 1;
       min-width: 0;
-    }
-
-    .cs-article {
-      --cs-gutter: 140px;
     }
 
     /* Starts level with the title (same row as .cs-main-col) instead of only
@@ -348,20 +379,20 @@
   }
 
   @media (max-width: 600px) {
+    /* No room to spare for marginalia at this width — Section and
+       StackManifest both fall back to static/stacked layouts here too. */
     .cs-shell {
       padding: 16px;
       gap: 22px;
+      --cs-gutter: 0px;
     }
 
     .cs-title {
       font-size: 24px;
     }
 
-    /* No room to spare for marginalia at this width — Section and
-       StackManifest both fall back to static/stacked layouts here too. */
-    .cs-article {
-      --cs-gutter: 0px;
-      padding-left: 0;
+    .cs-header {
+      padding-bottom: 18px;
     }
   }
 </style>

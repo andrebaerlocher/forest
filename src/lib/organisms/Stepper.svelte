@@ -133,7 +133,7 @@
   .stepper-step {
     position: relative;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     min-width: 0;
   }
 
@@ -147,11 +147,12 @@
   }
 
   .stepper-content {
+    --pad-y: 4px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: 10px;
     min-width: 0;
-    padding: 4px;
+    padding: var(--pad-y) 4px;
     background: transparent;
     border: 1.5px solid transparent;
     border-radius: var(--radius-s);
@@ -207,6 +208,7 @@
     flex-direction: column;
     gap: 1px;
     min-width: 0;
+    margin-top: 3px;
   }
 
   .stepper-label {
@@ -236,12 +238,14 @@
   .stepper[data-orientation='horizontal'] .stepper-connector {
     height: 1.5px;
     min-width: 16px;
-    margin: 0 8px;
+    align-self: flex-start;
+    margin: calc(var(--pad-y, 4px) + 13px - 0.75px) 8px 0;
   }
 
   .stepper[data-orientation='vertical'] .stepper-connector {
     width: 1.5px;
     min-height: 18px;
+    align-self: auto;
     margin: 2px 0 2px 17px;
   }
 
@@ -275,13 +279,14 @@
       width: 1.5px;
       height: auto;
       min-height: 18px;
+      align-self: auto;
       margin: 2px 0 2px 17px;
     }
   }
 
   @media (pointer: coarse) {
     .stepper-content {
-      padding: 8px 4px;
+      --pad-y: 8px;
     }
   }
 </style>

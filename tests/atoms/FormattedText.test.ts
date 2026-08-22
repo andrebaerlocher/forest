@@ -132,4 +132,103 @@ describe("parseBlockMarkdown", () => {
       },
     ]);
   });
+
+  it("parses multi-level nested lists with math and formatting", () => {
+    const text =
+      "* **Dual Engine**:\n  * **Joint Estimator**: $\\le 1000$ states\n  * **Marginal Estimator**: Fallback\n* **BKT**: Bayesian update";
+    const blocks = parseBlockMarkdown(text);
+    expect(blocks).toEqual([
+      {
+        type: "list",
+        ordered: false,
+        children: [
+          {
+            type: "list-item",
+            children: [
+              {
+                type: "strong",
+                children: [{ type: "text", content: "Dual Engine" }],
+              },
+              { type: "text", content: ":" },
+              {
+                type: "list",
+                ordered: false,
+                children: [
+                  {
+                    type: "list-item",
+                    children: [
+                      {
+                        type: "strong",
+                        children: [{ type: "text", content: "Joint Estimator" }],
+                      },
+                      { type: "text", content: ": " },
+                      { type: "math", content: "\\le 1000" },
+                      { type: "text", content: " states" },
+                    ],
+                  },
+                  {
+                    type: "list-item",
+                    children: [
+                      {
+                        type: "strong",
+                        children: [{ type: "text", content: "Marginal Estimator" }],
+                      },
+                      { type: "text", content: ": Fallback" },
+                    ],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "list-item",
+            children: [
+              {
+                type: "strong",
+                children: [{ type: "text", content: "BKT" }],
+              },
+              { type: "text", content: ": Bayesian update" },
+            ],
+          },
+        ],
+      },
+    ]);
+  });
+
+  it("parses ordered lists with nested unordered sub-lists", () => {
+    const text = "1. Item 1\n  - Subitem 1.1\n  - Subitem 1.2\n2. Item 2";
+    const blocks = parseBlockMarkdown(text);
+    expect(blocks).toEqual([
+      {
+        type: "list",
+        ordered: true,
+        children: [
+          {
+            type: "list-item",
+            children: [
+              { type: "text", content: "Item 1" },
+              {
+                type: "list",
+                ordered: false,
+                children: [
+                  {
+                    type: "list-item",
+                    children: [{ type: "text", content: "Subitem 1.1" }],
+                  },
+                  {
+                    type: "list-item",
+                    children: [{ type: "text", content: "Subitem 1.2" }],
+                  },
+                ],
+              },
+            ],
+          },
+          {
+            type: "list-item",
+            children: [{ type: "text", content: "Item 2" }],
+          },
+        ],
+      },
+    ]);
+  });
 });

@@ -6,6 +6,8 @@
     children?: TreeNodeData<T>[];
     expanded?: boolean;
     disabled?: boolean;
+    /** Explicitly declare whether node is a folder (useful for empty folders without children) */
+    isFolder?: boolean;
     /** Optional domain payload attached to the node */
     data?: T;
   }
@@ -235,6 +237,7 @@
 >
   {#each nodes as node (node.id)}
     {@const hasChildren = Boolean(node.children && node.children.length > 0)}
+    {@const isFolder = node.isFolder ?? (node.children !== undefined || node.label.endsWith('/') || node.label.endsWith('/...'))}
     {@const nodeOpen = ctx.isExpanded(node)}
     {@const selected = selectedId === node.id}
     <li
@@ -286,7 +289,7 @@
           {#if showIcons}
             {#if node.icon}
               <span class="node-icon">{node.icon}</span>
-            {:else if hasChildren}
+            {:else if isFolder}
               <span class="node-icon">{nodeOpen ? "📂" : "📁"}</span>
             {:else}
               <span class="node-icon">📄</span>
@@ -326,7 +329,7 @@
   .tree-view.root {
     border: 1px solid var(--line-mid);
     border-radius: var(--radius-s);
-    background: var(--paper-l);
+    background: var(--raised);
     padding: 4px 0;
     user-select: none;
   }
