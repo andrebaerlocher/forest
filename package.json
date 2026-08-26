@@ -1,6 +1,6 @@
 {
 	"name": "forest",
-	"version": "0.0.1",
+	"version": "0.1.0",
 	"description": "A Forest — a Svelte 5 component library and design system.",
 	"license": "UNLICENSED",
 	"author": "André Bärlocher",
