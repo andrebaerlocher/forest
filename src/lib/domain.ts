@@ -112,6 +112,18 @@ export interface DataTableSort {
   dir: "asc" | "desc";
 }
 
+/**
+ * Emitted by ReorderableTable once a row has landed.
+ *
+ * `rows` is the whole list in its new order, so a consumer can persist the
+ * order without re-deriving it from `from`/`to`.
+ */
+export interface TableReorder<Row = unknown> {
+  from: number;
+  to: number;
+  rows: Row[];
+}
+
 /** Status ink shared by StatusPill, Toast and the toaster. */
 export type Status = "neutral" | "success" | "warning" | "danger";
 

@@ -5,7 +5,7 @@
 ![Bun](https://img.shields.io/badge/Bun-Package%20Manager-fbf0df?logo=bun&logoColor=black)
 ![Storybook](https://img.shields.io/badge/Storybook-v10-FF4785?logo=storybook&logoColor=white)
 ![Biome](https://img.shields.io/badge/Code%20Style-Biome-60A5FA?logo=biome&logoColor=white)
-[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+![License: UNLICENSED](https://img.shields.io/badge/License-UNLICENSED-lightgrey.svg)
 
 > A modern, unstyled Svelte 5 component library built with CSS design tokens, built-in accessibility focus management, and an Atomic Design architecture.
 
@@ -39,10 +39,24 @@ Components inside `src/lib/` are structured according to Atomic Design principle
 
 ### 1. Install the Package
 
+Forest is not on the npm registry — it installs straight from the GitHub repo.
+Pin a tag so a consuming app upgrades deliberately rather than on every install:
+
 ```sh
-bun add forest
+bun add github:andrebaerlocher/forest#v0.1.0
 # or via npm / pnpm / yarn:
-# npm install forest
+# npm install github:andrebaerlocher/forest#v0.1.0
+```
+
+`dist/` is not committed, so the package builds itself on install via its
+`prepare` script. That means the consuming machine needs to be able to run
+`svelte-package` — which it can, since the repo's devDependencies are installed
+for that step automatically.
+
+To upgrade, move the tag reference and reinstall:
+
+```sh
+bun add github:andrebaerlocher/forest#v0.2.0
 ```
 
 ### 2. Import CSS Design Tokens
@@ -52,6 +66,10 @@ The components rely on token stylesheet CSS variables (`--hue`, `--ink-*`, `--wa
 ```js
 import "forest/styles/forest.css";
 ```
+
+The Illinois Mono typeface ships inside the package and is referenced by
+relative URL, so your bundler picks it up with no extra setup — there are no
+font files to copy.
 
 ### 3. Using Components & Types
 
@@ -141,6 +159,30 @@ Any component placed on dark paper (e.g. `Spine`, `Drawer`, `CommandPalette`) au
 
 ---
 
+## Releasing a Version
+
+Consumers install from a git tag, so a release is a version bump plus a tag.
+There is no registry step.
+
+```sh
+bun run diagnose                 # lint, types, duplication, tests
+bun run prepack                  # build dist/ and lint the package with publint
+npm version minor                # bumps package.json and creates the git tag
+git push --follow-tags
+```
+
+`npm version` refuses to run on a dirty tree, which is the check you want before
+tagging. Consuming apps then move to the new tag when they choose to.
+
+---
+
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+All rights reserved (`UNLICENSED`). Forest is distributed privately from its
+GitHub repository rather than published to a public registry.
+
+> Note: this was previously advertised as MIT, but no `LICENSE` file ever
+> existed. It is `UNLICENSED` for now because the package bundles the Illinois
+> Mono typeface — releasing under MIT would purport to sublicense that font
+> too. If you hold redistribution rights, switch `license` in `package.json`
+> and add the matching `LICENSE` file.

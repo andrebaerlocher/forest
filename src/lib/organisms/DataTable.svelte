@@ -7,6 +7,7 @@
   import { isPhone } from '../breakpoints.svelte.js';
   import type { DataTableColumn as Column, DataTableSort as Sort } from '../domain.js';
   import EmptyState from '../molecules/EmptyState.svelte';
+  import { cellValue, rawValue, rowId } from '../utils/tableValues.js';
 
   interface Props extends HTMLAttributes<HTMLDivElement> {
     columns?: Column<Row>[];
@@ -111,18 +112,17 @@
       : 'Unsorted'
   );
 
+  // Column value resolution is shared with ReorderableTable — see utils/tableValues.
   function getRawValue(row: Row, col: Column<Row>): unknown {
-    return col.getValue ? col.getValue(row) : (row as Record<string, unknown>)[col.key];
+    return rawValue(row, col);
   }
 
   function getCellValue(row: Row, col: Column<Row>): unknown {
-    const raw = getRawValue(row, col);
-    return col.format ? col.format(raw, row) : raw;
+    return cellValue(row, col);
   }
 
   function getRowId(row: Row, index: number = 0): string | number {
-    const val = (row as Record<string, unknown>)[rowKey] ?? (row as Record<string, unknown>).id;
-    return (val !== undefined && val !== null) ? (val as string | number) : index;
+    return rowId(row, rowKey, index);
   }
 
   function onSortSelect(e: Event) {

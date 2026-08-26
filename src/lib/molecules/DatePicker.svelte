@@ -1,24 +1,38 @@
 <script lang="ts">
   import type { HTMLAttributes } from 'svelte/elements';
 
+  type DateField = 'day' | 'month' | 'year';
+
   interface Props extends Omit<HTMLAttributes<HTMLDivElement>, 'onchange'> {
-    /** ISO date string, YYYY-MM-DD, or '' for empty */
+    /**
+     * ISO date string, YYYY-MM-DD, or '' for empty.
+     *
+     * Always ISO, whatever the locale — the field *displays* `14.08.2026` in
+     * `de-CH` but the bound value stays sortable and storable.
+     */
     value?: string;
+    /** Defaults to the locale's own pattern — `DD.MM.YYYY` for Switzerland. */
     placeholder?: string;
     disabled?: boolean;
     invalid?: boolean;
-    /** Locale used for month and weekday names */
+    /** Drives the display format, month names and weekday names. */
     locale?: string;
+    /**
+     * Weekday heading width. `narrow` is one letter, which is ambiguous in
+     * German — Montag and Mittwoch are both "M". `short` gives Mo/Di/Mi.
+     */
+    weekdayFormat?: 'narrow' | 'short';
     onchange?: (value: string) => void;
     class?: string;
   }
 
   let {
     value = $bindable(''),
-    placeholder = 'YYYY-MM-DD',
+    placeholder,
     disabled = false,
     invalid = false,
-    locale = 'en-GB',
+    locale = 'de-CH',
+    weekdayFormat = 'short',
     onchange,
     class: className = '',
     ...restProps
@@ -49,17 +63,141 @@
     if (parsed) cursor = new Date(parsed.getFullYear(), parsed.getMonth(), 1);
   });
 
+  /* ── Locale ──────────────────────────────────────────────────────────────
+     Field order and separator are read out of Intl rather than kept in a
+     table of locales, so `de-CH` gives 14.08.2026, `fr-CH` 14/08/2026 and
+     `en-CA` 2026-08-14 without this component knowing any of them by name.
+     The same pattern drives formatting, parsing and the placeholder, so the
+     three can't drift apart. */
+  let pattern = $derived.by(() => {
+    const fallback = { order: ['day', 'month', 'year'] as DateField[], separator: '.' };
+    try {
+      const parts = new Intl.DateTimeFormat(locale, {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit'
+      }).formatToParts(new Date(2026, 7, 14));
+      const order = parts
+        .filter((p) => p.type === 'day' || p.type === 'month' || p.type === 'year')
+        .map((p) => p.type as DateField);
+      if (order.length !== 3) return fallback;
+      const literal = parts.find((p) => p.type === 'literal')?.value.trim();
+      return { order, separator: literal || '.' };
+    } catch {
+      return fallback;
+    }
+  });
+
+  let patternHint = $derived(
+    pattern.order
+      .map((f) => (f === 'year' ? 'YYYY' : f === 'month' ? 'MM' : 'DD'))
+      .join(pattern.separator)
+  );
+
+  function formatDisplay(iso: string): string {
+    const d = parseISO(iso);
+    if (!d) return iso; // not a date yet — show whatever is there
+    const p = (n: number) => String(n).padStart(2, '0');
+    const fields: Record<DateField, string> = {
+      day: p(d.getDate()),
+      month: p(d.getMonth() + 1),
+      year: String(d.getFullYear())
+    };
+    return pattern.order.map((f) => fields[f]).join(pattern.separator);
+  }
+
+  /** Two-digit years: 70–99 are last century, everything else this one. */
+  function expandYear(year: number): number {
+    if (year >= 100) return year;
+    return year >= 70 ? 1900 + year : 2000 + year;
+  }
+
+  function buildISO(year: number, month: number, day: number): string | null {
+    if (!Number.isFinite(year) || !Number.isFinite(month) || !Number.isFinite(day)) return null;
+    const d = new Date(year, month - 1, day);
+    // Round-trip check: Date silently rolls 31.02 over into March.
+    if (d.getFullYear() !== year || d.getMonth() !== month - 1 || d.getDate() !== day) {
+      return null;
+    }
+    return toISO(d);
+  }
+
+  /** `14082026` / `140826` — entering a date without reaching for separators. */
+  function splitCompact(digits: string): string[] | null {
+    const yearWidth = digits.length - 4;
+    if (yearWidth !== 2 && yearWidth !== 4) return null;
+    const out: string[] = [];
+    let offset = 0;
+    for (const field of pattern.order) {
+      const width = field === 'year' ? yearWidth : 2;
+      out.push(digits.slice(offset, offset + width));
+      offset += width;
+    }
+    return out;
+  }
+
+  /** ISO string, '' for an empty field, or null when it isn't a date at all. */
+  function parseDisplay(text: string): string | null {
+    const trimmed = text.trim();
+    if (!trimmed) return '';
+
+    // ISO parses in every locale — it's the format `value` itself holds.
+    const iso = /^(\d{4})-(\d{1,2})-(\d{1,2})$/.exec(trimmed);
+    if (iso) return buildISO(Number(iso[1]), Number(iso[2]), Number(iso[3]));
+
+    const groups = /^\d{6}$|^\d{8}$/.test(trimmed)
+      ? splitCompact(trimmed)
+      : trimmed.split(/\D+/).filter(Boolean);
+    if (groups?.length !== 3) return null;
+
+    const at = (f: DateField) => Number(groups[pattern.order.indexOf(f)]);
+    return buildISO(expandYear(at('year')), at('month'), at('day'));
+  }
+
+  /* ── Typed entry ─────────────────────────────────────────────────────────
+     While the field holds a draft it shows the raw text; otherwise it shows
+     the formatted value. A draft that doesn't parse is *kept* and flagged
+     rather than discarded, so a typo can be corrected instead of retyped. */
+  let hasDraft = $state(false);
+  let draft = $state('');
+  let parseFailed = $state(false);
+
+  let display = $derived(hasDraft ? draft : formatDisplay(value));
+  let showsInvalid = $derived(invalid || parseFailed);
+
+  function clearDraft() {
+    hasDraft = false;
+    draft = '';
+    parseFailed = false;
+  }
+
+  function commitText() {
+    if (!hasDraft) return;
+    const parsed = parseDisplay(draft);
+    if (parsed === null) {
+      parseFailed = true;
+      return;
+    }
+    clearDraft();
+    if (parsed !== value) {
+      value = parsed;
+      onchange?.(parsed);
+    }
+  }
+
   let monthLabel = $derived(
     cursor.toLocaleDateString(locale, { month: 'long', year: 'numeric' })
   );
 
-  // Monday-first weekday initials, derived from the locale rather than hardcoded
+  // Monday-first weekday initials, derived from the locale rather than
+  // hardcoded. Monday is correct for Switzerland and the rest of the
+  // de/fr/it-CH world; Intl exposes no portable first-day-of-week.
   let weekdays = $derived.by(() => {
     const base = new Date(2024, 0, 1); // a Monday
     return Array.from({ length: 7 }, (_, i) => {
       const d = new Date(base);
       d.setDate(base.getDate() + i);
-      return d.toLocaleDateString(locale, { weekday: 'narrow' });
+      return d.toLocaleDateString(locale, { weekday: weekdayFormat });
     });
   });
 
@@ -82,6 +220,7 @@
   let todayISO = toISO(new Date());
 
   function pick(date: Date) {
+    clearDraft();
     value = toISO(date);
     onchange?.(value);
     isOpen = false;
@@ -89,6 +228,23 @@
 
   function shiftMonth(delta: number) {
     cursor = new Date(cursor.getFullYear(), cursor.getMonth() + delta, 1);
+  }
+
+  function handleInput(e: Event) {
+    draft = (e.currentTarget as HTMLInputElement).value;
+    hasDraft = true;
+    parseFailed = false;
+  }
+
+  function handleKeyDown(e: KeyboardEvent) {
+    if (e.key === 'Escape') {
+      e.preventDefault();
+      clearDraft();
+      isOpen = false;
+    } else if (e.key === 'Enter') {
+      commitText();
+      if (!parseFailed) isOpen = false;
+    }
   }
 
   function handleFocusOut(e: FocusEvent) {
@@ -106,20 +262,19 @@
 >
   <input
     class="date-input"
-    class:invalid
+    class:invalid={showsInvalid}
     type="text"
     inputmode="numeric"
-    {placeholder}
+    autocomplete="off"
+    spellcheck="false"
+    placeholder={placeholder ?? patternHint}
     {disabled}
-    aria-invalid={invalid}
-    bind:value
+    aria-invalid={showsInvalid ? 'true' : undefined}
+    value={display}
+    oninput={handleInput}
     onfocus={() => (isOpen = true)}
-    onkeydown={(e) => {
-      if (e.key === 'Escape' && isOpen) {
-        e.preventDefault();
-        isOpen = false;
-      }
-    }}
+    onblur={commitText}
+    onkeydown={handleKeyDown}
   />
 
   {#if isOpen && !disabled}
@@ -276,6 +431,8 @@
     letter-spacing: 0.1em;
     text-transform: uppercase;
     color: var(--text-3);
+    /* `short` weekdays run to three characters in some locales */
+    overflow: hidden;
   }
 
   .day,

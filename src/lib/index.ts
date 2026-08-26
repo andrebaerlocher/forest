@@ -62,6 +62,7 @@ export { default as Breadcrumb } from "./molecules/Breadcrumb.svelte";
 export { default as Callout } from "./molecules/Callout.svelte";
 export { default as CaseStudyCard } from "./molecules/CaseStudyCard.svelte";
 export { default as Combobox } from "./molecules/Combobox.svelte";
+export { default as CurrencyInput } from "./molecules/CurrencyInput.svelte";
 export { default as DatePicker } from "./molecules/DatePicker.svelte";
 export { default as Disclosure } from "./molecules/Disclosure.svelte";
 export { default as DropdownMenu } from "./molecules/DropdownMenu.svelte";
@@ -86,6 +87,24 @@ export { default as Tabs } from "./molecules/Tabs.svelte";
 export { default as TagInput } from "./molecules/TagInput.svelte";
 export { default as Toast } from "./molecules/Toast.svelte";
 export { default as Tooltip } from "./molecules/Tooltip.svelte";
+export type {
+  CurrencyAffix,
+  CurrencyDisplay,
+  MoneyFormatOptions,
+  MoneyParseOptions,
+  NumberSeparators,
+} from "./money.js";
+export {
+  CHF_CASH_STEP,
+  currencyAffix,
+  formatMoney,
+  fromMinor,
+  getSeparators,
+  parseMoney,
+  roundToDigits,
+  roundToStep,
+  toMinor,
+} from "./money.js";
 export { default as AppHeader } from "./organisms/AppHeader.svelte";
 export { default as BenchmarkTable } from "./organisms/BenchmarkTable.svelte";
 export { default as Chain } from "./organisms/Chain.svelte";
@@ -105,6 +124,7 @@ export { default as KanbanColumn } from "./organisms/KanbanColumn.svelte";
 export { default as LedgerTable } from "./organisms/LedgerTable.svelte";
 export { default as Menu } from "./organisms/Menu.svelte";
 export { default as Popover } from "./organisms/Popover.svelte";
+export { default as ReorderableTable } from "./organisms/ReorderableTable.svelte";
 export { default as Section } from "./organisms/Section.svelte";
 export { default as Spine } from "./organisms/Spine.svelte";
 export { default as SplitPane } from "./organisms/SplitPane.svelte";
