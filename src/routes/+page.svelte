@@ -111,7 +111,7 @@
 
 <style>
   .app-theme-ground {
-    min-height: 100vh;
+    min-height: 100dvh;
     background: var(--canvas);
     color: var(--text-1);
     transition: background var(--t-slow) var(--ease), color var(--t-slow) var(--ease);

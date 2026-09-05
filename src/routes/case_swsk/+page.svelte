@@ -1,5 +1,8 @@
 <script lang="ts">
     import FormattedText from "$lib/atoms/FormattedText.svelte";
+    import SealButton from "$lib/atoms/SealButton.svelte";
+    import Wordmark from "$lib/atoms/Wordmark.svelte";
+    import { isPhone } from "$lib/breakpoints.svelte.js";
     import type { CaseStudySummaryData, ChainStep, DecisionStatus, MetricItem, RejectedAlternative, StepItem } from "$lib/domain.js";
     import Callout from "$lib/molecules/Callout.svelte";
     import Disclosure from "$lib/molecules/Disclosure.svelte";
@@ -112,6 +115,27 @@
 
     let collapsed = $state<boolean>(true);
 
+    let panelOpen = $state(false);
+
+    const phone = isPhone();
+
+
+    // Desktop: the other case studies live in a panel beside the rail, which
+
+    // `collapsed` shows and hides. A phone has nothing to put a panel beside,
+
+    // so the same content arrives as the spine drawer instead. Reading `phone`
+
+    // in a click handler is behaviour, not appearance — no hydration flash.
+
+    function toggleCases() {
+
+      if (phone.current) panelOpen = true;
+
+      else collapsed = !collapsed;
+
+    }
+
     $effect.pre(() => {
       document.documentElement.setAttribute('data-mode', 'dark');
       document.documentElement.style.setProperty('--hue', String(222));
@@ -160,8 +184,10 @@
 </script>
 
 {#snippet rail()}
-  <div class="wordmark">Portfolio</div>
-  <button onclick={() => collapsed = !collapsed}>o</button>
+  <Wordmark text="Portfolio" />
+  <SealButton onclick={toggleCases} aria-label="Weitere Fallstudien">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
+  </SealButton>
 {/snippet}
 
 {#snippet spineChildren()}
@@ -172,8 +198,8 @@
   <StackManifest groups={roles} />
 {/snippet}
 
-<Shell wordmark="Portfolio" showControls={false} {spineChildren} {collapsed} {rail}>
-	<CaseStudyShell title="Automatische Aufsatzbewertung via LLM-Ensemble" metrics={METRICS} tags={TAGS} {meta} subtitle="Eine Fallstudie: 1'750 Texte, strikter Datenschutz und Custom-Statistiken." tocTitle="Übersicht">
+<Shell wordmark="Portfolio" showControls={false} {spineChildren} {collapsed} {rail} bind:panelOpen>
+	<CaseStudyShell lang="de" title="Automatische Aufsatzbewertung via LLM-Ensemble" metrics={METRICS} tags={TAGS} {meta} subtitle="Eine Fallstudie: 1'750 Texte, strikter Datenschutz und Custom-Statistiken." tocTitle="Übersicht">
 	<FormattedText block text={`"Es ist mit dem aktuellen Stand der Technik nicht möglich." Das war das Fazit einer initialen Machbarkeitsstudie, nachdem Fachexperten diverse Tests mit SOTA-Sprachmodellen durchgeführt hatten. Zudem verschärfte sich das Problem durch strenge Datenschutzvorgaben: Da die Aufsätze hochsensible persönliche Daten enthielten, war die Nutzung von APIs wie OpenAI oder Anthropic rechtlich ausgeschlossen.
 
 	Als der Leiter des Gesamtprojekts mich nach meiner Einschätzung fragte, baute ich an einem Sonntagmorgen einen Proof of Concept. Mein Ansatz: Die Evaluation musste auf kleine, datenschutzkonforme **lokale Modelle** heruntergebrochen und über eine strikte Pipeline orchestriert werden. Dieser PoC bewies, dass das Projekt realisierbar war. Das Commitment ging so weit, dass meine Frau und ich eigens für die offizielle Umsetzung dieses Projekts eine Firma gründeten.
@@ -283,15 +309,4 @@ Dieses Projekt zeigte eindrücklich, dass erfolgreiches AI Engineering selten be
 </Shell>
 
 <style>
-  .wordmark {
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.5em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      writing-mode: vertical-lr;
-      text-orientation: mixed;
-      transform: rotate(180deg);
-  }
 </style>

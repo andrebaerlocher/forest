@@ -1,6 +1,9 @@
 <script lang="ts">
     import Divider from "$lib/atoms/Divider.svelte";
     import FormattedText from "$lib/atoms/FormattedText.svelte";
+    import SealButton from "$lib/atoms/SealButton.svelte";
+    import Wordmark from "$lib/atoms/Wordmark.svelte";
+    import { isPhone } from "$lib/breakpoints.svelte.js";
     import type { CaseStudySummaryData, ChainStep, DecisionStatus, MetricItem, RejectedAlternative, StepItem } from "$lib/domain.js";
     import Callout from "$lib/molecules/Callout.svelte";
     import Disclosure from "$lib/molecules/Disclosure.svelte";
@@ -255,6 +258,27 @@
 
     let collapsed = $state<boolean>(true);
 
+    let panelOpen = $state(false);
+
+    const phone = isPhone();
+
+
+    // Desktop: the other case studies live in a panel beside the rail, which
+
+    // `collapsed` shows and hides. A phone has nothing to put a panel beside,
+
+    // so the same content arrives as the spine drawer instead. Reading `phone`
+
+    // in a click handler is behaviour, not appearance — no hydration flash.
+
+    function toggleCases() {
+
+      if (phone.current) panelOpen = true;
+
+      else collapsed = !collapsed;
+
+    }
+
     $effect.pre(() => {
       document.documentElement.setAttribute('data-mode', 'dark');
       document.documentElement.style.setProperty('--hue', String(222));
@@ -387,8 +411,10 @@
 </script>
 
 {#snippet rail()}
-  <div class="wordmark">Portfolio</div>
-  <button onclick={() => collapsed = !collapsed}>o</button>
+  <Wordmark text="Portfolio" />
+  <SealButton onclick={toggleCases} aria-label="Weitere Fallstudien">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
+  </SealButton>
 {/snippet}
 
 {#snippet spineChildren()}
@@ -403,8 +429,8 @@
   <Stepper steps={steps} completedIds={['poc', 'prototyp']} activeId="projektstart" />
 {/snippet}
 
-<Shell wordmark="Portfolio" showControls={false} {spineChildren} {collapsed} {rail}>
-	<CaseStudyShell title="Architektur einer hochperformanten KI-Lernplattform" metrics={METRICS} tags={TAGS} {meta} subtitle="Eine Fallstudie: Von probabilistischer Lernstandanalyse (BKT) zu Sub-Millisekunden-Recommendations." tocTitle="Übersicht">
+<Shell wordmark="Portfolio" showControls={false} {spineChildren} {collapsed} {rail} bind:panelOpen>
+	<CaseStudyShell lang="de" title="Architektur einer hochperformanten KI-Lernplattform" metrics={METRICS} tags={TAGS} {meta} subtitle="Eine Fallstudie: Von probabilistischer Lernstandanalyse (BKT) zu Sub-Millisekunden-Recommendations." tocTitle="Übersicht">
 	<FormattedText block text={`Dieses Projekt begann als sechswöchiger Proof of Concept (PoC) in Zusammenarbeit mit einer KI-Agentur, um einen LLM-basierten Tutor für das Fachgebiet Mathematik ("Folgen und Reihen") zu evaluieren. Der durchschlagende Erfolg dieses PoCs – und der anschliessenden Prototyping-Phase, die bei Feldtests mit Schulklassen sowohl Lernende als auch Lehrpersonen überzeugte – führte zur Entscheidung, eine vollständige Lernplattform für voraussichtlich über 10'000 Lernende inklusive physischem Hauptlehrmittel zu entwickeln.
 
 	**Die Herausforderung: Budget-Restriktionen & Pragmatische Architektur**
@@ -670,17 +696,6 @@ Ergänzt wird diese robuste Pipeline durch das **Linkerd Service Mesh** (mTLS, C
 </Shell>
 
 <style>
-  .wordmark {
-      font-family: var(--font-body);
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.5em;
-      text-transform: uppercase;
-      margin-bottom: 6px;
-      writing-mode: vertical-lr;
-      text-orientation: mixed;
-      transform: rotate(180deg);
-  }
 
   .crud-tree-container {
       margin-top: 16px;

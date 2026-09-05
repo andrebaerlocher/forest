@@ -2,6 +2,7 @@
   import Divider from "$lib/atoms/Divider.svelte";
   import SealButton from "$lib/atoms/SealButton.svelte";
   import TableCell from "$lib/atoms/TableCell.svelte";
+  import Wordmark from "$lib/atoms/Wordmark.svelte";
   import EditableTableCell from "$lib/molecules/EditableTableCell.svelte";
   import Tabs from "$lib/molecules/Tabs.svelte";
   import AppHeader from "$lib/organisms/AppHeader.svelte";
@@ -114,7 +115,7 @@
 
     {#snippet railFooter()}
       <div class="rail-bottom">
-        <div class="wordmark-vertical">A FOREST</div>
+        <Wordmark text="A Forest" />
         <SealButton
           onclick={() => triggerCommand("toggle-mode")}
           aria-label="Toggle Box Mode"
@@ -350,7 +351,7 @@
 <style>
   /* App layouts container shell */
   .app-mockup-wrapper {
-    height: 100vh;
+    height: 100dvh;
     width: 100%;
     overflow: hidden;
     position: relative;
@@ -392,19 +393,6 @@
     width: 100%;
   }
 
-  .wordmark-vertical {
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.5em;
-    color: var(--text-3);
-    writing-mode: vertical-lr;
-    text-orientation: mixed;
-    transform: rotate(180deg);
-    user-select: none;
-    margin: 32px 0;
-  }
-
   /* Spreadsheet mockup layout */
   .spreadsheet-container {
     flex: 1;
@@ -430,6 +418,11 @@
     border-radius: 4px;
   }
 
+  /* DECIDED (see the scroller's note above for the why): panning is the
+     settled answer, so this min-width is load-bearing, not an oversight.
+     Do not shrink it to make the grid fit 375px — that trades the address
+     space for a fit nobody asked for. A phone-shaped view of this data would
+     be a different component, not a media query on this one. */
   .ledger-grid {
     width: 100%;
     /* 48 index + 220 garden + 3 x 120 numeric */

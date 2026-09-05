@@ -30,6 +30,40 @@ type Align = "start" | "end" | "center";
 
 const VIEWPORT_MARGIN = 8;
 
+interface ViewportBounds {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
+/**
+ * The visible area to clamp against, in the same coordinate space as
+ * `getBoundingClientRect()` and `position: fixed` (the layout viewport).
+ *
+ * `window.visualViewport` shrinks when the on-screen keyboard opens —
+ * `innerHeight` does not. A `position: fixed` surface still lays out
+ * against the *layout* viewport, so without this a Popover/Combobox/
+ * DatePicker anchored to a focused field can end up positioned behind the
+ * keyboard. `offsetLeft`/`offsetTop` give the visual viewport's origin
+ * within that same layout-viewport space, so the bounds below describe
+ * exactly the region still visible above the keyboard (or after a pinch
+ * zoom). Absent in jsdom and older browsers — fall back to the window
+ * dimensions, which is the previous, unaware behaviour.
+ */
+function getViewportBounds(): ViewportBounds {
+  const vv = typeof window !== "undefined" ? window.visualViewport : null;
+  if (vv) {
+    return {
+      left: vv.offsetLeft,
+      top: vv.offsetTop,
+      right: vv.offsetLeft + vv.width,
+      bottom: vv.offsetTop + vv.height,
+    };
+  }
+  return { left: 0, top: 0, right: window.innerWidth, bottom: window.innerHeight };
+}
+
 function parsePlacement(placement: AnchoredPlacement): { side: Side; align: Align } {
   const [side, align] = placement.split("-") as [Side, Align | undefined];
   return { side, align: align ?? "center" };
@@ -71,22 +105,21 @@ export function anchored(node: HTMLElement, options: AnchoredOptions) {
     side: Side,
     anchorRect: DOMRect,
     surfaceRect: DOMRect,
-    vw: number,
-    vh: number,
+    bounds: ViewportBounds,
   ): Side {
     if (!flip) return side;
 
     if (side === "top" || side === "bottom") {
-      const spaceAbove = anchorRect.top;
-      const spaceBelow = vh - anchorRect.bottom;
+      const spaceAbove = anchorRect.top - bounds.top;
+      const spaceBelow = bounds.bottom - anchorRect.bottom;
       const needed = surfaceRect.height + offset;
       if (side === "top" && spaceAbove < needed && spaceBelow > spaceAbove) return "bottom";
       if (side === "bottom" && spaceBelow < needed && spaceAbove > spaceBelow) return "top";
       return side;
     }
 
-    const spaceLeft = anchorRect.left;
-    const spaceRight = vw - anchorRect.right;
+    const spaceLeft = anchorRect.left - bounds.left;
+    const spaceRight = bounds.right - anchorRect.right;
     const needed = surfaceRect.width + offset;
     if (side === "left" && spaceLeft < needed && spaceRight > spaceLeft) return "right";
     if (side === "right" && spaceRight < needed && spaceLeft > spaceRight) return "left";
@@ -98,11 +131,10 @@ export function anchored(node: HTMLElement, options: AnchoredOptions) {
 
     const anchorRect = anchor.getBoundingClientRect();
     const surfaceRect = node.getBoundingClientRect();
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const bounds = getViewportBounds();
 
     const preferred = parsePlacement(placement);
-    const side = resolveFlip(preferred.side, anchorRect, surfaceRect, vw, vh);
+    const side = resolveFlip(preferred.side, anchorRect, surfaceRect, bounds);
     const align = preferred.align;
 
     let top: number;
@@ -117,7 +149,11 @@ export function anchored(node: HTMLElement, options: AnchoredOptions) {
       else left = anchorRect.left + anchorRect.width / 2 - surfaceRect.width / 2;
 
       if (shift) {
-        left = clamp(left, VIEWPORT_MARGIN, vw - surfaceRect.width - VIEWPORT_MARGIN);
+        left = clamp(
+          left,
+          bounds.left + VIEWPORT_MARGIN,
+          bounds.right - surfaceRect.width - VIEWPORT_MARGIN,
+        );
       }
     } else {
       left =
@@ -125,7 +161,11 @@ export function anchored(node: HTMLElement, options: AnchoredOptions) {
       top = anchorRect.top + anchorRect.height / 2 - surfaceRect.height / 2;
 
       if (shift) {
-        top = clamp(top, VIEWPORT_MARGIN, vh - surfaceRect.height - VIEWPORT_MARGIN);
+        top = clamp(
+          top,
+          bounds.top + VIEWPORT_MARGIN,
+          bounds.bottom - surfaceRect.height - VIEWPORT_MARGIN,
+        );
       }
     }
 
@@ -157,6 +197,11 @@ export function anchored(node: HTMLElement, options: AnchoredOptions) {
     window.addEventListener("scroll", scheduleReposition, { capture: true, passive: true });
     window.addEventListener("resize", scheduleReposition);
 
+    // The soft keyboard resizes/scrolls the visual viewport without firing
+    // window's own resize/scroll — absent in jsdom, so guard it.
+    window.visualViewport?.addEventListener("resize", scheduleReposition);
+    window.visualViewport?.addEventListener("scroll", scheduleReposition);
+
     // First correct use of ResizeObserver in this library — guard its
     // absence rather than assume the runtime has it.
     if (typeof ResizeObserver !== "undefined") {
@@ -174,6 +219,8 @@ export function anchored(node: HTMLElement, options: AnchoredOptions) {
 
     window.removeEventListener("scroll", scheduleReposition, true);
     window.removeEventListener("resize", scheduleReposition);
+    window.visualViewport?.removeEventListener("resize", scheduleReposition);
+    window.visualViewport?.removeEventListener("scroll", scheduleReposition);
     resizeObserver?.disconnect();
     resizeObserver = null;
 

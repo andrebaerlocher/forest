@@ -2,6 +2,7 @@
   import Avatar from "$lib/atoms/Avatar.svelte";
   import Divider from "$lib/atoms/Divider.svelte";
   import SealButton from "$lib/atoms/SealButton.svelte";
+  import Wordmark from "$lib/atoms/Wordmark.svelte";
   import ActivityItem from "$lib/molecules/ActivityItem.svelte";
   import Combobox from "$lib/molecules/Combobox.svelte";
   import DatePicker from "$lib/molecules/DatePicker.svelte";
@@ -160,7 +161,7 @@
 
     {#snippet railFooter()}
       <div class="rail-bottom">
-        <div class="wordmark-vertical">A FOREST</div>
+        <Wordmark text="A Forest" />
         <SealButton
           onclick={() => triggerCommand("toggle-mode")}
           aria-label="Toggle Box Mode"
@@ -313,7 +314,7 @@
 
 <style>
   .app-mockup-wrapper {
-    height: 100vh;
+    height: 100dvh;
     width: 100%;
     overflow: hidden;
     position: relative;
@@ -352,19 +353,6 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-  }
-
-  .wordmark-vertical {
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.5em;
-    color: var(--text-3);
-    writing-mode: vertical-lr;
-    text-orientation: mixed;
-    transform: rotate(180deg);
-    user-select: none;
-    margin: 32px 0;
   }
 
   .panel-section-title {

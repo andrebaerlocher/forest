@@ -7,7 +7,9 @@ node_modules
 .wrangler
 /.svelte-kit
 /build
-/dist
+# NOT /dist — it is committed on purpose. Consumers install this repo over
+# git, and bun neither installs a git dependency's devDependencies nor runs
+# its prepare script, so a build-on-install would leave them with no library.
 
 # OS
 .DS_Store
@@ -34,3 +36,6 @@ storybook-static
 .svelte-doctor
 CLAUDE.md
 # src/routes/cases/
+
+# Codegraph local index cache
+/.codegraph

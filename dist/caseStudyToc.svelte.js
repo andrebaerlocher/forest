@@ -1,0 +1,54 @@
+/**
+ * Table-of-contents registry — the channel anchored sections use to announce
+ * themselves to the shell above them.
+ *
+ * A long-form case study is authored as markup, not as a data blob, so the
+ * shell cannot know its own outline up front. Section / DeepDive / DecisionRecord
+ * register on mount and the shell renders whatever registered.
+ *
+ * The registry is optional by design: every anchored component works standalone
+ * (it just has nobody to report to), and `CaseStudyShell` accepts an explicit
+ * `toc` prop for consumers who want the outline server-rendered.
+ */
+import { getContext, setContext } from "svelte";
+const TOC_KEY = Symbol("forest.case-study.toc");
+export function createTocRegistry() {
+    // $state.raw, not $state: an item holds a live DOM node, and deep-proxying
+    // that (as plain $state would) sends Svelte's dev-mode tracking walking the
+    // node's own property graph. Raw state only tracks the array reference, so
+    // every mutation below reassigns rather than pushes/splices in place.
+    let items = $state.raw([]);
+    return {
+        get entries() {
+            // Sort by document position rather than trusting registration order:
+            // Svelte makes no promise about the order sibling effects fire in, and a
+            // DeepDive's nested Sections register whenever their own effect runs.
+            return [...items]
+                .sort((a, b) => a.node.compareDocumentPosition(b.node) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1)
+                .map((registration) => registration.entry);
+        },
+        register(entry, node) {
+            // Deferred to a microtask, not written synchronously: a Section's own
+            // mount effect calls this, and writing shared $state from inside the
+            // very effect flush that's still settling re-enters Svelte's batch
+            // scheduler — harmless on a plain client mount, but during SSR
+            // hydration it never converges (each write re-dirties the flush that's
+            // still processing). Yielding a tick lets that flush finish first.
+            queueMicrotask(() => {
+                items = [...items, { entry, node }];
+            });
+            return () => {
+                queueMicrotask(() => {
+                    items = items.filter((r) => r.entry.id !== entry.id);
+                });
+            };
+        },
+    };
+}
+export function provideTocRegistry(registry) {
+    setContext(TOC_KEY, registry);
+}
+/** The enclosing shell's registry, or undefined when used standalone. */
+export function useTocRegistry() {
+    return getContext(TOC_KEY);
+}

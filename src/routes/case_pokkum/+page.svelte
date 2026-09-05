@@ -1,6 +1,9 @@
 <script lang="ts">
   import Divider from "$lib/atoms/Divider.svelte";
   import FormattedText from "$lib/atoms/FormattedText.svelte";
+  import SealButton from "$lib/atoms/SealButton.svelte";
+  import Wordmark from "$lib/atoms/Wordmark.svelte";
+  import { isPhone } from "$lib/breakpoints.svelte.js";
   import type { CaseStudySummaryData, ChainStep, MetricItem, StepItem } from "$lib/domain.js";
   import Callout from "$lib/molecules/Callout.svelte";
   import Disclosure from "$lib/molecules/Disclosure.svelte";
@@ -40,6 +43,27 @@
   ];
 
   let collapsed = $state(true);
+
+  let panelOpen = $state(false);
+
+  const phone = isPhone();
+
+
+  // Desktop: the other case studies live in a panel beside the rail, which
+
+  // `collapsed` shows and hides. A phone has nothing to put a panel beside,
+
+  // so the same content arrives as the spine drawer instead. Reading `phone`
+
+  // in a click handler is behaviour, not appearance — no hydration flash.
+
+  function toggleCases() {
+
+    if (phone.current) panelOpen = true;
+
+    else collapsed = !collapsed;
+
+  }
 
   $effect.pre(() => {
     document.documentElement.setAttribute('data-mode', 'dark');
@@ -86,8 +110,10 @@
 </script>
 
 {#snippet rail()}
-  <div class="wordmark">Portfolio</div>
-  <button onclick={() => collapsed = !collapsed}>o</button>
+  <Wordmark text="Portfolio" />
+  <SealButton onclick={toggleCases} aria-label="Weitere Fallstudien">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h10" /></svg>
+  </SealButton>
 {/snippet}
 
 {#snippet spineChildren()}
@@ -102,8 +128,8 @@
   <Stepper steps={timeline} completedIds={['handstart', 'exe', 'vibe-gemini']} activeId="verification" />
 {/snippet}
 
-<Shell wordmark="Portfolio" showControls={false} {spineChildren} {collapsed} {rail}>
-  <CaseStudyShell title="Pokkum — 100% Vibe-Coded" metrics={METRICS} tags={TAGS} {meta} subtitle="Eine Methoden-Fallstudie über Vibe-Coding: was ein Agent vorhersehbar gut kann, wo er lügt – und wie man mit Tests und Systemprompts Vertrauen zurückgewinnt." tocTitle="Übersicht">
+<Shell wordmark="Portfolio" showControls={false} {spineChildren} {collapsed} {rail} bind:panelOpen>
+  <CaseStudyShell lang="de" title="Pokkum — 100% Vibe-Coded" metrics={METRICS} tags={TAGS} {meta} subtitle="Eine Methoden-Fallstudie über Vibe-Coding: was ein Agent vorhersehbar gut kann, wo er lügt – und wie man mit Tests und Systemprompts Vertrauen zurückgewinnt." tocTitle="Übersicht">
     <FormattedText block text={`Pokkum ist ein **zero-dependency OCI-Container-Image-Compiler für SvelteKit** – im Kern „ko für SvelteKit": kein Dockerfile, kein Docker daemon, bit-for-bit reproduzierbare Builds out of the box. Dieses Dokument ist aber bewusst **keine Architektur-Fallstudie**. Die eigentliche Geschichte ist die *Methode*: Pokkum habe ich zu 100 % per **Vibe-Coding** gebaut – und dabei herausgefunden, wo KI-gestützte Entwicklung vorhersehbar stark ist, wo sie lügt, und wie man Qualität zurückgewinnt, wenn man die massive Code-Menge nicht mehr selbst vollständig überblicken kann.
 
 **Der Auslöser.** Eigentlich begann alles mit einem Sicherheitsproblem: Das bestehende SvelteKit-Image meines „zentralen" Projekts hat ein CVE-Problem – ich brauchte ein „wasserdichtes" Image. Daraus wurde die Idee eines eigenen, minimalen und deterministisch reproduzierbaren Compilers.
@@ -257,7 +283,4 @@ Das **grösste Learning** aus diesem Projekt ist klar die **Quality Control**: W
 </Shell>
 
 <style>
-  .wordmark {
-    font-weight: 700;
-  }
 </style>

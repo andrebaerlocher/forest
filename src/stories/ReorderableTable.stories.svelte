@@ -86,6 +86,9 @@
             </td>
           </tr>
         {/snippet}
+        {#snippet cardFooter()}
+          Subtotal &nbsp; <span class="num">{formatMoney(subtotal)}</span>
+        {/snippet}
       </ReorderableTable>
     </div>
   {/snippet}

@@ -3,6 +3,7 @@
   import Progress from "$lib/atoms/Progress.svelte";
   import SealButton from "$lib/atoms/SealButton.svelte";
   import Textarea from "$lib/atoms/Textarea.svelte";
+  import Wordmark from "$lib/atoms/Wordmark.svelte";
   import ListRow from "$lib/molecules/ListRow.svelte";
   import AppHeader from "$lib/organisms/AppHeader.svelte";
   import ContextualStrip from "$lib/organisms/ContextualStrip.svelte";
@@ -117,7 +118,7 @@
 
     {#snippet railFooter()}
       <div class="rail-bottom">
-        <div class="wordmark-vertical">A FOREST</div>
+        <Wordmark text="A Forest" />
         <SealButton
           onclick={() => triggerCommand("toggle-mode")}
           aria-label="Toggle Box Mode"
@@ -279,7 +280,7 @@
 <style>
   /* App layouts container shell */
   .app-mockup-wrapper {
-    height: 100vh;
+    height: 100dvh;
     width: 100%;
     overflow: hidden;
     position: relative;
@@ -319,19 +320,6 @@
     flex-direction: column;
     align-items: center;
     width: 100%;
-  }
-
-  .wordmark-vertical {
-    font-family: var(--font-body);
-    font-size: 12px;
-    font-weight: 500;
-    letter-spacing: 0.5em;
-    color: var(--text-3);
-    writing-mode: vertical-lr;
-    text-orientation: mixed;
-    transform: rotate(180deg);
-    user-select: none;
-    margin: 32px 0;
   }
 
   /* Secondary panel documents styles */

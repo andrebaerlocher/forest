@@ -14,7 +14,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    min-height: 100vh;
+    min-height: 100dvh;
     font-family: var(--font-body);
     text-align: center;
     background: var(--canvas);

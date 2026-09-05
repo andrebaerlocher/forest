@@ -1,7 +1,18 @@
-import { mount, tick, unmount } from "svelte";
-import { afterEach, beforeAll, beforeEach, describe, expect, it } from "vitest";
+import { createRawSnippet, mount, tick, unmount } from "svelte";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 import type { TableReorder } from "$lib/domain.js";
 import ReorderableTable from "$lib/organisms/ReorderableTable.svelte";
+
+// Minimal snippets — mount() can't accept inline {#snippet} syntax, so these
+// stand in for what a consumer passes as `footer`/`cardFooter` props. Same
+// technique tests/organisms/LedgerTable.test.ts uses.
+const cardFooterSnippet = createRawSnippet(() => ({
+  render: () => '<div>Subtotal: <span class="num">1,920</span></div>',
+}));
+
+const tableFooterSnippet = createRawSnippet(() => ({
+  render: () => "<tr><td>Subtotal: 1,920</td></tr>",
+}));
 
 interface Line {
   id: string;
@@ -320,5 +331,154 @@ describe("ReorderableTable component tests", () => {
     );
 
     unmount(instance);
+  });
+
+  describe("card mode (phone)", () => {
+    // isPhone() reads window.matchMedia(MQ.shell) inside an $effect; stubbing
+    // the global (rather than jsdom's own matchMedia) is the same technique
+    // tests/breakpoints.test.svelte.ts uses to flip it to true.
+    beforeEach(() => {
+      vi.stubGlobal("matchMedia", (query: string) => ({
+        matches: true,
+        media: query,
+        onchange: null,
+        addListener: () => {},
+        removeListener: () => {},
+        addEventListener: () => {},
+        removeEventListener: () => {},
+        dispatchEvent: () => true,
+      }));
+    });
+
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    const cards = () => Array.from(container.querySelectorAll<HTMLLIElement>(".row-card"));
+    const moveButtons = (card: HTMLLIElement, label: string) =>
+      Array.from(card.querySelectorAll<HTMLButtonElement>("button.move-btn")).find((b) =>
+        b.getAttribute("aria-label")?.endsWith(label),
+      );
+
+    it("renders a card per row instead of the table", async () => {
+      const { instance } = await mountAndSettle();
+
+      expect(cards()).toHaveLength(3);
+      expect(cards()[0].textContent).toContain("Consulting");
+
+      unmount(instance);
+    });
+
+    it("moves a row with the down button and disables it at the last position", async () => {
+      const { instance, events } = await mountAndSettle();
+
+      const down = moveButtons(cards()[0], "down");
+      down?.click();
+      await tick();
+
+      expect(order()).toEqual(["Hosting", "Consulting", "Support"]);
+      expect(events).toHaveLength(1);
+      expect(events[0].from).toBe(0);
+      expect(events[0].to).toBe(1);
+
+      // Consulting is now last; its own down button is disabled.
+      const movedDown = moveButtons(cards()[2], "down");
+      expect(movedDown?.disabled).toBe(true);
+
+      unmount(instance);
+    });
+
+    it("moves a row with the up button and reuses the same move() as the keyboard path", async () => {
+      const { instance } = await mountAndSettle();
+
+      const up = moveButtons(cards()[2], "up");
+      up?.click();
+      await tick();
+
+      expect(order()).toEqual(["Consulting", "Support", "Hosting"]);
+      expect(container.querySelector("[aria-live]")?.textContent).toContain("Support");
+
+      unmount(instance);
+    });
+
+    it("disables the first row's up button and the last row's down button", async () => {
+      const { instance } = await mountAndSettle();
+
+      expect(moveButtons(cards()[0], "up")?.disabled).toBe(true);
+      expect(moveButtons(cards()[2], "down")?.disabled).toBe(true);
+      expect(moveButtons(cards()[0], "down")?.disabled).toBe(false);
+      expect(moveButtons(cards()[2], "up")?.disabled).toBe(false);
+
+      unmount(instance);
+    });
+
+    it("labels each move button with the row it acts on", async () => {
+      const { instance } = await mountAndSettle();
+
+      expect(moveButtons(cards()[1], "up")?.getAttribute("aria-label")).toBe("Move Hosting up");
+      expect(moveButtons(cards()[1], "down")?.getAttribute("aria-label")).toBe("Move Hosting down");
+
+      unmount(instance);
+    });
+
+    it("disables both buttons when there is nothing to reorder against", async () => {
+      const { instance } = await mountAndSettle({ rows: [rows[0]] });
+
+      const card = cards()[0];
+      expect(moveButtons(card, "up")?.disabled).toBe(true);
+      expect(moveButtons(card, "down")?.disabled).toBe(true);
+
+      unmount(instance);
+    });
+
+    describe("cardFooter", () => {
+      it("renders the card-shaped totals as a sibling of the card list, not a card", async () => {
+        const { instance } = await mountAndSettle({
+          cardFooter: cardFooterSnippet,
+        });
+
+        const footer = container.querySelector(".card-footer");
+        expect(footer?.textContent).toContain("Subtotal: 1,920");
+        // Not another .row-card — a totals line isn't a reorderable row.
+        expect(footer?.closest(".row-card")).toBeNull();
+        expect(container.querySelectorAll(".row-card")).toHaveLength(3);
+
+        unmount(instance);
+      });
+
+      it("renders nothing when cardFooter is not passed", async () => {
+        const { instance } = await mountAndSettle();
+
+        expect(container.querySelector(".card-footer")).toBeNull();
+
+        unmount(instance);
+      });
+
+      it("stays hidden when there are no rows, same as the table footer", async () => {
+        const { instance } = await mountAndSettle({
+          rows: [],
+          cardFooter: cardFooterSnippet,
+        });
+
+        expect(container.querySelector(".card-footer")).toBeNull();
+
+        unmount(instance);
+      });
+
+      it("leaves footer-only consumers without totals on a phone, same as before this prop existed", async () => {
+        const { instance } = await mountAndSettle({
+          footer: tableFooterSnippet,
+        });
+
+        expect(container.querySelector(".card-footer")).toBeNull();
+        // The table (and its tfoot) still exist in the DOM, just display:none
+        // below the shell breakpoint — jsdom doesn't apply that media query,
+        // so this only proves no card-mode fallback was invented, not that
+        // the table is visually hidden (the CSS itself covers that).
+        expect(container.querySelector("tfoot")).not.toBeNull();
+
+        unmount(instance);
+      });
+    });
   });
 });

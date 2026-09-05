@@ -39,25 +39,26 @@ Components inside `src/lib/` are structured according to Atomic Design principle
 
 ### 1. Install the Package
 
-Forest is not on the npm registry — it installs straight from the GitHub repo.
-Pin a tag so a consuming app upgrades deliberately rather than on every install:
+Forest is not on the npm registry — it installs straight from its **private**
+GitHub repo. Because the repo is private, use the `git+ssh` form: bun resolves
+`github:` and `git+https` shorthands through the unauthenticated GitHub API,
+which answers `404` for private repos.
 
 ```sh
-bun add github:andrebaerlocher/forest#v0.1.0
-# or via npm / pnpm / yarn:
-# npm install github:andrebaerlocher/forest#v0.1.0
+bun add git+ssh://git@github.com/andrebaerlocher/forest.git#v0.1.0
 ```
 
-`dist/` is not committed, so the package builds itself on install via its
-`prepare` script. That means the consuming machine needs to be able to run
-`svelte-package` — which it can, since the repo's devDependencies are installed
-for that step automatically.
-
-To upgrade, move the tag reference and reinstall:
+Each consuming machine needs to be able to reach the repo over git. Either add
+an SSH key to your GitHub account, or — if you already authenticate over HTTPS —
+tell git to rewrite that one URL, once per machine:
 
 ```sh
-bun add github:andrebaerlocher/forest#v0.2.0
+git config --global url."https://github.com/".insteadOf "ssh://git@github.com/"
 ```
+
+`dist/` is committed to the repo, so installing is a plain clone: no build step
+runs on your machine, and no lifecycle scripts need trusting. To upgrade, point
+at a newer tag and reinstall.
 
 ### 2. Import CSS Design Tokens
 
@@ -161,12 +162,13 @@ Any component placed on dark paper (e.g. `Spine`, `Drawer`, `CommandPalette`) au
 
 ## Releasing a Version
 
-Consumers install from a git tag, so a release is a version bump plus a tag.
-There is no registry step.
+`dist/` is committed, so a release is *build, commit, tag*. Skipping the build
+step ships a stale library — that is the one way to get this wrong.
 
 ```sh
 bun run diagnose                 # lint, types, duplication, tests
-bun run prepack                  # build dist/ and lint the package with publint
+bun run release                  # builds dist/ via prepack and stages it
+git commit -m "build: dist for release"
 npm version minor                # bumps package.json and creates the git tag
 git push --follow-tags
 ```
