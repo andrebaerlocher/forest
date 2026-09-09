@@ -39,3 +39,4 @@ CLAUDE.md
 
 # Codegraph local index cache
 /.codegraph
+.svelte_ide/parse_cache.bin
